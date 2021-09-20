@@ -1,6 +1,17 @@
 import argparse, base58, enum, json, sys
 from functools import partial
 
+from . import (
+  key_share,
+  key_combine,
+  sign_share,
+  sign_convert,
+  sign_combine,
+  sign,
+  verify,
+  serialization,
+)
+
 class HelpFormatter(argparse.HelpFormatter):
   def add_argument(self, action):
     if action.help is not argparse.SUPPRESS:
@@ -194,7 +205,7 @@ def main():
 
 def command_key_share(args):
   ser = partial(serialize, compress=args.compress)
-  shares = ggmpc.key_share(args.i, args.t, args.n)
+  shares = key_share(args.i, args.t, args.n)
   P_i = shares[args.i]
   print('\nSave for yourself: %s' % ser(DataType.P_SHARE, P_i))
   for i in shares:
@@ -206,7 +217,7 @@ def command_key_share(args):
 
 def command_key_combine(args):
   ser = partial(serialize, compress=args.compress)
-  shares = ggmpc.key_combine(list(map(deserialize, args.KEYSHARE)))
+  shares = key_combine(list(map(deserialize, args.KEYSHARE)))
   P_i = shares[next(filter(lambda i: 'p' in shares[i], shares))]
   print('\nSave for yourself: %s' % ser(DataType.X_SHARE, P_i))
   for i in shares:
@@ -218,7 +229,7 @@ def command_key_combine(args):
 
 def command_sign_share(args):
   ser = partial(serialize, compress=args.compress)
-  shares = ggmpc.sign_share(list(map(deserialize, args.KEYSHARE)))
+  shares = sign_share(list(map(deserialize, args.KEYSHARE)))
   P_i = shares[next(filter(lambda i: 'p' in shares[i], shares))]
   print('\nSave for yourself: %s' % ser(DataType.W_SHARE, P_i))
   for i in shares:
@@ -235,7 +246,7 @@ def command_sign_convert(args):
     share = shares[i]
     if type(list(share.keys())[0]) == int:
       shares[i] = shares[i][next(filter(lambda i: 'p' in share[i], share))]
-  shares = ggmpc.sign_convert(shares)
+  shares = sign_convert(shares)
   P_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
   P_j = shares[next(filter(lambda i: 'j' in shares[i], shares))]
   data_type = None
@@ -256,9 +267,9 @@ def command_sign_combine(args):
   ser = partial(serialize, compress=args.compress)
   shares = list(map(deserialize, args.SIGNSHARE))
   if 'r' in shares[0] and 's' in shares[0]:
-    print('\n%s' % ser(DataType.SIGNATURE, ggmpc.sign_combine(shares)))
+    print('\n%s' % ser(DataType.SIGNATURE, sign_combine(shares)))
   else:
-    shares = ggmpc.sign_combine(shares)
+    shares = sign_combine(shares)
     P_i = shares[next(filter(lambda i: 'k' in shares[i], shares))]
     print('\nSave for yourself: %s' % ser(DataType.O_SHARE, P_i))
     for i in shares:
@@ -272,11 +283,11 @@ def command_sign(args):
   ser = partial(serialize, compress=args.compress)
   M = args.MESSAGE[0].encode('ascii')
   shares = list(map(deserialize, args.SIGNSHARE))
-  print('\n%s' % ser(DataType.S_SHARE, ggmpc.sign(M, shares)))
+  print('\n%s' % ser(DataType.S_SHARE, sign(M, shares)))
 
 def command_verify(args):
   M = args.MESSAGE[0].encode('ascii')
-  assert ggmpc.verify(M, deserialize(args.SIGNATURE[0]))
+  assert verify(M, deserialize(args.SIGNATURE[0]))
   print('\nverification succeeded')
 
 def command_deserialize(args):
@@ -293,10 +304,10 @@ def encode(obj):
     elif key == 'j':
       encoded[key] = val
     elif key == 'y' or key == 'Gamma':
-      encoded[key] = ggmpc.serialization.serialize_point(val).hex()
+      encoded[key] = serialization.serialize_point(val).hex()
     else:
       length = (val.bit_length() + 7) // 8
-      encoded[key] = ggmpc.serialization.serialize_int(val, length).hex()
+      encoded[key] = serialization.serialize_int(val, length).hex()
   return encoded
 
 def serialize_to_json(obj):
@@ -315,9 +326,9 @@ def decode(encoded):
     elif key == 'j':
       obj[key] = val
     elif key == 'y' or key == 'Gamma':
-      obj[key] = ggmpc.point_deserialize(bytes.fromhex(val))[1]
+      obj[key] = serialization.point_deserialize(bytes.fromhex(val))[1]
     else:
-      obj[key] = ggmpc.deserialize_int(bytes.fromhex(val))[1]
+      obj[key] = serialization.deserialize_int(bytes.fromhex(val))[1]
   return obj
 
 def deserialize_from_json(string):
@@ -344,20 +355,20 @@ alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 def serialize(data_type, data, compress=True):
   if compress:
     serialize = {
-      DataType.P_SHARE: ggmpc.serialization.serialize_p_share,
-      DataType.N_SHARE: ggmpc.serialization.serialize_n_share,
-      DataType.X_SHARE: ggmpc.serialization.serialize_x_share,
-      DataType.Y_SHARE: ggmpc.serialization.serialize_y_share,
-      DataType.W_SHARE: ggmpc.serialization.serialize_w_share,
-      DataType.K_SHARE: ggmpc.serialization.serialize_k_share,
-      DataType.B_SHARE: ggmpc.serialization.serialize_b_share,
-      DataType.A_SHARE: ggmpc.serialization.serialize_a_share,
-      DataType.M_SHARE: ggmpc.serialization.serialize_m_share,
-      DataType.G_SHARE: ggmpc.serialization.serialize_g_share,
-      DataType.O_SHARE: ggmpc.serialization.serialize_o_share,
-      DataType.D_SHARE: ggmpc.serialization.serialize_d_share,
-      DataType.S_SHARE: ggmpc.serialization.serialize_s_share,
-      DataType.SIGNATURE: ggmpc.serialization.serialize_signature,
+      DataType.P_SHARE: serialization.serialize_p_share,
+      DataType.N_SHARE: serialization.serialize_n_share,
+      DataType.X_SHARE: serialization.serialize_x_share,
+      DataType.Y_SHARE: serialization.serialize_y_share,
+      DataType.W_SHARE: serialization.serialize_w_share,
+      DataType.K_SHARE: serialization.serialize_k_share,
+      DataType.B_SHARE: serialization.serialize_b_share,
+      DataType.A_SHARE: serialization.serialize_a_share,
+      DataType.M_SHARE: serialization.serialize_m_share,
+      DataType.G_SHARE: serialization.serialize_g_share,
+      DataType.O_SHARE: serialization.serialize_o_share,
+      DataType.D_SHARE: serialization.serialize_d_share,
+      DataType.S_SHARE: serialization.serialize_s_share,
+      DataType.SIGNATURE: serialization.serialize_signature,
     }
     data = serialize[data_type](data)
     i, j = None, None
@@ -393,20 +404,20 @@ def deserialize(data):
   if data[0] == '{':
     return deserialize_from_json(data)
   deserialize = {
-    DataType.P_SHARE: ggmpc.serialization.deserialize_p_share,
-    DataType.N_SHARE: ggmpc.serialization.deserialize_n_share,
-    DataType.X_SHARE: ggmpc.serialization.deserialize_x_share,
-    DataType.Y_SHARE: ggmpc.serialization.deserialize_y_share,
-    DataType.W_SHARE: ggmpc.serialization.deserialize_w_share,
-    DataType.K_SHARE: ggmpc.serialization.deserialize_k_share,
-    DataType.B_SHARE: ggmpc.serialization.deserialize_b_share,
-    DataType.A_SHARE: ggmpc.serialization.deserialize_a_share,
-    DataType.M_SHARE: ggmpc.serialization.deserialize_m_share,
-    DataType.G_SHARE: ggmpc.serialization.deserialize_g_share,
-    DataType.O_SHARE: ggmpc.serialization.deserialize_o_share,
-    DataType.D_SHARE: ggmpc.serialization.deserialize_d_share,
-    DataType.S_SHARE: ggmpc.serialization.deserialize_s_share,
-    DataType.SIGNATURE: ggmpc.serialization.deserialize_signature,
+    DataType.P_SHARE: serialization.deserialize_p_share,
+    DataType.N_SHARE: serialization.deserialize_n_share,
+    DataType.X_SHARE: serialization.deserialize_x_share,
+    DataType.Y_SHARE: serialization.deserialize_y_share,
+    DataType.W_SHARE: serialization.deserialize_w_share,
+    DataType.K_SHARE: serialization.deserialize_k_share,
+    DataType.B_SHARE: serialization.deserialize_b_share,
+    DataType.A_SHARE: serialization.deserialize_a_share,
+    DataType.M_SHARE: serialization.deserialize_m_share,
+    DataType.G_SHARE: serialization.deserialize_g_share,
+    DataType.O_SHARE: serialization.deserialize_o_share,
+    DataType.D_SHARE: serialization.deserialize_d_share,
+    DataType.S_SHARE: serialization.deserialize_s_share,
+    DataType.SIGNATURE: serialization.deserialize_signature,
   }
   data_size = {
     DataType.P_SHARE: 450,
