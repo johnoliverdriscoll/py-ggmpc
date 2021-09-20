@@ -7,10 +7,9 @@ Welcome to ggmpc's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2
    :caption: Contents:
 
-   ggmpc
+   autoapi/index
 
 Indices and tables
 ==================

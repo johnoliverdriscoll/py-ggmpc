@@ -8,20 +8,6 @@ This is an implementation of
 
 # Installation
 
-## Dependencies
-
-Ensure that these dependencies are satisfied on your build system:
-`python3`,
-`pip`,
-[`libsecp256k1`](https://github.com/bitcoin-core/secp256k1)
-
-On a Debian-based system, you can run the following command to install the
-dependencies:
-
-```shell
-$ sudo apt-get install libsecp256k1-dev pkg-config python3-pip
-```
-
 ## PIP
 
 ```shell

@@ -16,7 +16,7 @@ class CommandLine(unittest.TestCase):
 
   def ggmpc(*args, **kwargs):
     process = subprocess.run(
-      [sys.executable, '-m', 'src.ggmpc'] + list(args),
+      ['ggmpc'] + list(args),
       capture_output=True,
     )
     if process.returncode != 0:

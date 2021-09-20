@@ -20,13 +20,13 @@ class LibraryMethods(unittest.TestCase):
 
     AB, BA = ggmpc.sign_combine((AB,)), ggmpc.sign_combine((BA,))
 
-    m = ggmpc.hash(b'MPC on a Friday night')
+    M = b'MPC on a Friday night'
 
-    A, B = ggmpc.sign(m, (AB[1], BA[1])), ggmpc.sign(m, (AB[2], BA[2])),
+    A, B = ggmpc.sign(M, (AB[1], BA[1])), ggmpc.sign(M, (AB[2], BA[2])),
 
     sig = ggmpc.sign_combine((A, B))
 
-    assert ggmpc.verify(m, sig)
+    assert ggmpc.verify(M, sig)
 
   def test_2_in_3_of_5(self):
     A = ggmpc.key_share(1, 3, 5)
@@ -49,13 +49,13 @@ class LibraryMethods(unittest.TestCase):
 
     AC, CA = ggmpc.sign_combine((AC,)), ggmpc.sign_combine((CA,))
 
-    m = ggmpc.hash(b'MPC on a Friday night')
+    M = b'MPC on a Friday night'
 
-    A, C = ggmpc.sign(m, (AC[1], CA[1])), ggmpc.sign(m, (AC[3], CA[3]))
+    A, C = ggmpc.sign(M, (AC[1], CA[1])), ggmpc.sign(M, (AC[3], CA[3]))
 
     sig = ggmpc.sign_combine((A, C))
 
-    assert not ggmpc.verify(m, sig)
+    assert not ggmpc.verify(M, sig)
 
   def test_3_in_3_of_5(self):
     A = ggmpc.key_share(1, 3, 5)
@@ -92,14 +92,14 @@ class LibraryMethods(unittest.TestCase):
       ggmpc.sign_combine((BA, BC)), \
       ggmpc.sign_combine((CA, CB)),
 
-    m = ggmpc.hash(b'MPC on a Friday night')
+    M = b'MPC on a Friday night'
 
     A, B, C = \
-      ggmpc.sign(m, (ABC[1], BAC[1], CAB[1])), \
-      ggmpc.sign(m, (ABC[2], BAC[2], CAB[2])), \
-      ggmpc.sign(m, (ABC[3], BAC[3], CAB[3])),
+      ggmpc.sign(M, (ABC[1], BAC[1], CAB[1])), \
+      ggmpc.sign(M, (ABC[2], BAC[2], CAB[2])), \
+      ggmpc.sign(M, (ABC[3], BAC[3], CAB[3])),
 
 
     sig = ggmpc.sign_combine((A, B, C))
 
-    assert ggmpc.verify(m, sig)
+    assert ggmpc.verify(M, sig)
