@@ -340,9 +340,7 @@ def sign(M, shares):
 
   :rtype: dict
   """
-  H = hashlib.sha256()
-  H.update(M)
-  m = int.from_bytes(H.digest(), 'big')
+  m = int.from_bytes(hashlib.sha256(M).digest(), 'big')
   P_i = next(filter(lambda share: 'k' in share, shares))
   q = int(ecdsa.ecdsa.generator_secp256k1.order())
   delta = sum(map(lambda share: share['delta'], shares)) % q
