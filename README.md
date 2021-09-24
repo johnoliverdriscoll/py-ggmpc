@@ -3,8 +3,10 @@
 
 # ggmpc
 
-This is an implementation of
-[Gennaro-Goldfeder threshold signatures](https://eprint.iacr.org/2020/540.pdf).
+This is an implementation of MPC threshold signatures for both ECDSA and EdDSA.
+The ECDSA implementation is based on [Fast Multiparty Threshold ECDSA with Fast
+Trustless Setup](https://eprint.iacr.org/2020/540.pdf). The EdDSA implementation is based on [Provably Secure Distributed Schnorr Signatures and a (*t*, *n*)
+Threshold Scheme for Implicit Certificates](https://github.com/ZenGo-X/multi-party-schnorr/blob/master/papers/provably_secure_distributed_schnorr_signatures_and_a_threshold_scheme.pdf).
 
 # Installation
 
@@ -28,29 +30,10 @@ $ python3 -m unittest -v
 
 ## Python package
 
-Read the automatically generated [documentation](https://py-ggmpc.readthedocs.io/en/latest/?badge=latest) and [unit tests](https://github.com/johnoliverdriscoll/py-ggmpc/blob/master/test/test_library_methods.py).
+Read the automatically generated [documentation](https://py-ggmpc.readthedocs.io/en/latest/?badge=latest) and [unit tests](https://github.com/johnoliverdriscoll/py-ggmpc/blob/master/test).
 
 ## Command line
 
 This project includes a command line utility that can perform all features.
-
-```shell
-usage: ggmpc [-h] COMMAND ...
-
-positional arguments:
-    COMMAND
-      keyshare     create key shares
-      keycombine   combine key shares
-      signshare    create signing shares
-      signconvert  convert signing shares
-      signcombine  combine converted signing shares and signature shares
-      sign         sign message using converted signing shares
-      verify       verify a signature
-      deserialize  deserialize data
-
-optional arguments:
-  -h, --help       show this help message and exit
-```
-
 Examples of complete end-to-end key generation and signing flows using the
 command line utility can be found in the [TESTING](TESTING.md) document.

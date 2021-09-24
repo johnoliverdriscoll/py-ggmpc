@@ -33,6 +33,8 @@ release = '0.0.3'
 extensions = ['autoapi.extension']
 autoapi_dirs = ['../../src']
 
+autoapi_options = ['members', 'show-module-summary']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
