@@ -1,6 +1,6 @@
 from functools import reduce
 
-def split(curve, s, t, n):
+def split(curve, s, t, n=None, I=None):
   """
   Perform Shamir sharing on the secret `s` to the degree `t - 1` split `n`
   ways. The split secret requires `t` shares to be reconstructed.
@@ -10,16 +10,23 @@ def split(curve, s, t, n):
   :param t: Share threshold required to reconstruct secret.
   :type t: int
   :param n: Total number of shares to split secret into.
-  :type n: int
+  :type n: int, optional
+  :param I: Indices used for each party. Defaults to range(1, 1 + n).
+  :type I: list, optional
   :return: Dictionary of shares. Each key is an int in the range 1<=x<=n
     representing that share's free term.
   :rtype dict:
   """
+  if I == None:
+    assert n != None
+    I = range(1, 1 + n)
+  elif n == None:
+    n = len(I)
   assert t > 1
   assert t <= n
   coefs = [curve.scalar_random() for i in range(0, t - 1)] + [s]
   shares = dict()
-  for x in range(1, 1 + n):
+  for x in I:
     shares[x] = reduce(
       lambda partial, coef: \
       curve.scalar_add(coef, curve.scalar_mul(partial, x)),

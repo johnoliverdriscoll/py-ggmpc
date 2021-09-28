@@ -515,7 +515,7 @@ def eddsa_sign_combine(mpc, args):
   ser = partial(serialize, compress=args.compress)
   shares = list(map(deserialize, args.SIGNSHARE))
   print(
-    '\nSend to all players: %s' \
+    '\n%s' \
     % ser(DataType.EDDSA_SIGNATURE, mpc.sign_combine(shares))
   )
 

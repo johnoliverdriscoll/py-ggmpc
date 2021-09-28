@@ -553,6 +553,7 @@ class Eddsa:
     :rtype: dict
     """
     S_i = next(filter(lambda S_i: not 'j' in S_i, S))
+    I = list(map(lambda S_i: S_i['i'], S))
     digest = self.curve.hash(
       S_i['prefix'].to_bytes(32, 'big') \
       + M \
@@ -560,7 +561,7 @@ class Eddsa:
     ).digest()
     r = self.curve.scalar_reduce(int.from_bytes(digest, 'big'))
     R = self.curve.point_mul_base(r)
-    r = shamir.split(self.curve, r, len(S), len(S))
+    r = shamir.split(self.curve, r, len(S), I=I)
     shares = {
       S_i['i']: {
         'i': S_i['i'],
