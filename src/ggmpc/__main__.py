@@ -563,9 +563,14 @@ def decode(encoded):
     elif key == 'j':
       obj[key] = val
     elif key == 'y' or key == 'Gamma':
-      obj[key] = serialization.point_deserialize(bytes.fromhex(val))[1]
+      ser = bytes.fromhex(val)
+      if len(ser) == 33:
+        obj[key] = serialization.ecdsa.deserialize_point(ser)[1]
+      else:
+        obj[key] = serialization.deserialize_int(ser, 32)[1]
     else:
-      obj[key] = serialization.deserialize_int(bytes.fromhex(val))[1]
+      ser = bytes.fromhex(val)
+      obj[key] = serialization.deserialize_int(ser, len(ser))[1]
   return obj
 
 def deserialize_from_json(string):

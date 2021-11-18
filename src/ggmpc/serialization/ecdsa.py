@@ -9,8 +9,11 @@ def serialize_point(p):
   Serialize point.
 
   :param p: Point to serialize.
+
   :type x: ecdsa.ellipticcurve.PointJacobi
+
   :return: Serialization of `p`.
+
   :rtype: bytes
   """
   return p.to_bytes(encoding='compressed')
@@ -20,8 +23,11 @@ def deserialize_point(ser):
   Deserialize a point.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized point.
+
   :rtype: tuple
   """
   if ser[0] == 0x00:
@@ -41,8 +47,11 @@ def serialize_p_share(share):
   Serialize a p-share.
 
   :param share: P-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -58,8 +67,11 @@ def deserialize_p_share(ser):
   Deserialize a p-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized p-share.
+
   :rtype: tuple
   """
   P_i = {}
@@ -75,8 +87,11 @@ def serialize_n_share(share):
   Serialize an n-share.
 
   :param share: N-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -92,8 +107,11 @@ def deserialize_n_share(ser):
   Deserialize an n-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized n-share.
+
   :rtype: tuple
   """
   P_j = {}
@@ -109,8 +127,11 @@ def serialize_x_share(share):
   Serialize an x-share.
 
   :param share: X-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -126,8 +147,11 @@ def deserialize_x_share(ser):
   Deserialize an x-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized x-share.
+
   :rtype: tuple
   """
   P_i = {}
@@ -143,8 +167,11 @@ def serialize_y_share(share):
   Serialize a y-share.
 
   :param share: Y-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -158,8 +185,11 @@ def deserialize_y_share(ser):
   Deserialize a y-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized y-share.
+
   :rtype: tuple
   """
   P_j = {}
@@ -173,8 +203,11 @@ def serialize_w_share(share):
   Serialize a w-share.
 
   :param share: W-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -192,8 +225,11 @@ def deserialize_w_share(ser):
   Deserialize a w-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized w-share.
+
   :rtype: tuple
   """
   S_i = {}
@@ -211,8 +247,11 @@ def serialize_k_share(share):
   Serialize a k-share.
 
   :param share: K-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -227,8 +266,11 @@ def deserialize_k_share(ser):
   Deserialize a k-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized k-share.
+
   :rtype: tuple
   """
   S_j = {}
@@ -243,8 +285,11 @@ def serialize_b_share(shares):
   Serialize a beta-share.
 
   :param share: Beta-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
@@ -271,9 +316,12 @@ def deserialize_b_share(ser):
   Deserialize a beta-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized
      beta-share.
+
   :rtype: tuple
   """
   S_i, S_j = {}, {}
@@ -302,8 +350,11 @@ def serialize_a_share(share):
   Serialize an alpha-share.
 
   :param share: Alpha-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -320,8 +371,11 @@ def deserialize_a_share(ser):
   Deserialize an alpha-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized w-share.
+
   :rtype: tuple
   """
   S_j = {}
@@ -338,8 +392,11 @@ def serialize_m_share(share):
   Serialize a mu-share.
 
   :param share: Mu-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -354,8 +411,11 @@ def deserialize_m_share(ser):
   Deserialize a mu-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized mu-share.
+
   :rtype: tuple
   """
   S_j = {}
@@ -370,8 +430,11 @@ def serialize_g_share(shares):
   Serialize a gamma-share.
 
   :param share: Gamma-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
@@ -394,9 +457,12 @@ def deserialize_g_share(ser):
   Deserialize a gamma-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized
     gamma-share.
+
   :rtype: tuple
   """
   S_i, S_j = {}, {}
@@ -421,8 +487,11 @@ def serialize_o_share(share):
   Serialize an omicron-share.
 
   :param share: Omicron-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -439,9 +508,12 @@ def deserialize_o_share(ser):
   Deserialize a omicron-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized
     omicron-share.
+
   :rtype: tuple
   """
   S_i = {}
@@ -458,8 +530,11 @@ def serialize_d_share(share):
   Serialize a delta-share.
 
   :param share: Delta-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -474,9 +549,12 @@ def deserialize_d_share(ser):
   Deserialize a delta-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized
     delta-share.
+
   :rtype: tuple
   """
   S_j = {}
@@ -491,8 +569,11 @@ def serialize_s_share(share):
   Serialize an s-share.
 
   :param share: S-share to serialize.
+
   :type share: dict
+
   :return: Serialization of `share`.
+
   :rtype: bytes
   """
   ser = b''
@@ -507,8 +588,11 @@ def deserialize_s_share(ser):
   Deserialize a s-share.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized s-share.
+
   :rtype: tuple
   """
   S_i = {}
@@ -523,8 +607,11 @@ def serialize_signature(signature):
   Serialize a signature.
 
   :param signature: Signature to serialize.
+
   :type signature: dict
+
   :return: Serialization of `signature`.
+
   :rtype: bytes
   """
   ser = b''
@@ -538,9 +625,12 @@ def deserialize_signature(ser):
   Deserialize a signature.
 
   :param ser: Serialized data.
+
   :type ser: bytes
+
   :return: The remainder of the serialized data and the deserialized
      signature.
+
   :rtype: tuple
   """
   sig = {}
