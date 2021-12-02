@@ -1,4 +1,4 @@
-import ecdsa, nacl, unittest
+import nacl, unittest
 import src.ggmpc as ggmpc
 import src.ggmpc.curves as curves
 
