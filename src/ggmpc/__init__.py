@@ -462,19 +462,19 @@ class Eddsa:
     """
     assert i > 0 and i <= n
     sk = random.SystemRandom().randrange(2 ** 256)
-    sk = sk.to_bytes((sk.bit_length() + 7) // 8, 'big')
+    sk = sk.to_bytes((sk.bit_length() + 7) // 8, 'little')
     h = self.curve.hash(sk).digest()
     h = b'\x00' * (64 - len(h)) + h
     u = [x for x in h[0:32]]
     u[0] &= 248
     u[31] &= 63
     u[31] |= 64
-    u = self.curve.scalar_reduce(int.from_bytes(bytes([0] * 32 + u), 'big'))
+    u = self.curve.scalar_reduce(int.from_bytes(bytes(u + [0] * 32), 'little'))
     y = self.curve.point_mul_base(u)
     u = shamir.split(self.curve, u, t, n)
     prefix = [x for x in h[32:]]
     prefix = [0] * 32 + prefix
-    prefix = self.curve.scalar_reduce(int.from_bytes(bytes(prefix), 'big'))
+    prefix = self.curve.scalar_reduce(int.from_bytes(bytes(prefix), 'little'))
     P_i = {
       'i': i,
       'y': y,
