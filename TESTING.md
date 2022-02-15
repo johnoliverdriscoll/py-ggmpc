@@ -713,7 +713,7 @@ distributed to the other players.
 Alice chooses index 1 and generates her key shares.
 
 ```shell
-$ ggmpc eddsa keyshare -i 1 -t 2 -n 5
+$ ggmpc eddsa keyshare -i 1 -t 3 -n 5
 
 Save for yourself: ushd_i1_2MNHKtKRQ45aZjNQZYsNr5gWs9MQdkFaFHHaQDnaQhWgX4jjKJp5qnoP9X67f4wrM9Zshw2n7Q8YE6jbXMhmRpKBHJJgtR7X5AuwJLJ3LLoHuThP4z2p7E4As5GZPNGNd1cNvKoR6
 
@@ -729,7 +729,7 @@ Send to player 5: yshd_i5j1_5YonKYSgsBgHVuqJcyEfrDVGnKJySQykp1aCHMoc81xtYxMj5Tsy
 Bob chooses index 2 and generates his key shares.
 
 ```shell
-$ ggmpc eddsa keyshare -i 2 -t 2 -n 5
+$ ggmpc eddsa keyshare -i 2 -t 3 -n 5
 
 Save for yourself: ushd_i2_AUgBQgndp5JTGGz2aH17dLnpihD88QyioEK29WvKL6Hnatxoms6NTdQxvQpfK8K4DGKabeTYaxZo78F2C5bNHhQXcojHjqKHKpnf9t2Jx3hB4ipHVnPGYE8MaXpvVCqE7bYx4Tp23
 
@@ -745,7 +745,7 @@ Send to player 5: yshd_i5j2_YuNcmuMLasu6TKXkUwvLvEZ24G9T5qpceRmwM8XBa7EEtEjdiXAR
 Carol chooses index 3 and generates her key shares.
 
 ```shell
-$ ggmpc eddsa keyshare -i 3 -t 2 -n 5
+$ ggmpc eddsa keyshare -i 3 -t 3 -n 5
 
 Save for yourself: ushd_i3_3Nre7VgbKLu37TM9pjkgjZjFwNkrbwt7u3hDHYGzpM4NWWrAKCRFf4QpnqS8tKiNftFx2mE7R5hpA49Jt6rj7iheHWtNSaVA3a3FK1o2FZnFAvy9r8rNyTMwmv9Ru5etZ7AKtrbnu
 
