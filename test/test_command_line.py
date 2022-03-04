@@ -109,6 +109,10 @@ class Eddsa(unittest.TestCase):
 
   ggmpc = partial(ggmpc, 'eddsa')
 
+  def test_secret(self):
+    sk = Eddsa.ggmpc('secretgen')
+    Eddsa.ggmpc('keyshare', '-i', '1', '-t', '2', '-n', '3', '-sk', sk[0])
+
   def test_2_in_2_of_3(self):
     A = Eddsa.ggmpc('keyshare', '-i', '1', '-t', '2', '-n', '3')
     B = Eddsa.ggmpc('keyshare', '-i', '2', '-t', '2', '-n', '3')

@@ -438,7 +438,32 @@ class Eddsa:
   def __init__(self, curve):
     self.curve = curve
 
-  def key_share(self, i, t, n):
+  def secret_generate(self):
+    """
+    Generate a secret that can be used as a contribution in DKG.
+
+    :return: A secret.
+
+    :rtype: dict
+    """
+    sk = random.SystemRandom().randrange(2 ** 256)
+    sk = sk.to_bytes((sk.bit_length() + 7) // 8, 'little')
+    h = self.curve.hash(sk).digest()
+    h = b'\x00' * (64 - len(h)) + h
+    u = [x for x in h[0:32]]
+    u[0] &= 248
+    u[31] &= 63
+    u[31] |= 64
+    u = self.curve.scalar_reduce(int.from_bytes(bytes(u + [0] * 32), 'little'))
+    prefix = [x for x in h[32:]]
+    prefix = [0] * 32 + prefix
+    prefix = self.curve.scalar_reduce(int.from_bytes(bytes(prefix), 'little'))
+    return {
+      'u': u,
+      'prefix': prefix,
+    }
+
+  def key_share(self, i, t, n, sk=None):
     """
     Generate shares for player at index `i` of key split `(t,n)` ways.
 
@@ -448,7 +473,7 @@ class Eddsa:
 
     :param t: Signing threshold.
 
-    :type t: int
+    :Type t: int
 
     :param n: Number of shares.
 
@@ -461,25 +486,15 @@ class Eddsa:
     :rtype: dict
     """
     assert i > 0 and i <= n
-    sk = random.SystemRandom().randrange(2 ** 256)
-    sk = sk.to_bytes((sk.bit_length() + 7) // 8, 'little')
-    h = self.curve.hash(sk).digest()
-    h = b'\x00' * (64 - len(h)) + h
-    u = [x for x in h[0:32]]
-    u[0] &= 248
-    u[31] &= 63
-    u[31] |= 64
-    u = self.curve.scalar_reduce(int.from_bytes(bytes(u + [0] * 32), 'little'))
-    y = self.curve.point_mul_base(u)
-    u = shamir.split(self.curve, u, t, n)
-    prefix = [x for x in h[32:]]
-    prefix = [0] * 32 + prefix
-    prefix = self.curve.scalar_reduce(int.from_bytes(bytes(prefix), 'little'))
+    if sk == None:
+      sk = self.secret_generate()
+    y = self.curve.point_mul_base(sk['u'])
+    u = shamir.split(self.curve, sk['u'], t, n)
     P_i = {
       'i': i,
       'y': y,
       'u': u[i],
-      'prefix': prefix,
+      'prefix': sk['prefix'],
     }
     shares = {
       P_i['i']: P_i,

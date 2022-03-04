@@ -2,6 +2,40 @@
 
 from .. import serialization
 
+def serialize_secret(sk):
+  """
+  Serialize a secret.
+
+  :param sk: The secret to serialize.
+
+  :type sk: dict
+
+  :return: Serialization of `secret`.
+
+  :rtype: bytes
+  """
+  ser = b''
+  ser += serialization.serialize_int(sk['u'], 32)
+  ser += serialization.serialize_int(sk['prefix'], 32)
+  return ser
+
+def deserialize_secret(ser):
+  """
+  Deserialize a secret.
+
+  :param ser: Serialized data.
+
+  :type ser: bytes
+
+  :return: The remainder of serialized data and the deserialized secret.
+
+  :rtype: tuple
+  """
+  sk = {}
+  ser, sk['u'] = serialization.deserialize_int(ser, 32)
+  ser, sk['prefix'] = serialization.deserialize_int(ser, 32)
+  return ser, sk
+
 def serialize_u_share(share):
   """
   Serialize a u-share.

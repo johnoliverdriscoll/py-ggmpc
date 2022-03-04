@@ -86,3 +86,46 @@ class Eddsa(unittest.TestCase):
     sig = mpc.sign_combine((A, B, C))
 
     assert mpc.verify(M, sig)
+
+  def test_offset(self):
+    mpc = ggmpc.Eddsa(curves.ed25519)
+
+    sk = mpc.secret_generate()
+
+    A1 = mpc.key_share(1, 2, 3, sk)
+    B1 = mpc.key_share(2, 2, 3)
+    C1 = mpc.key_share(3, 2, 3)
+
+    A2, B2, C2 = \
+      mpc.key_combine((A1[1], B1[1], C1[1])), \
+      mpc.key_combine((A1[2], B1[2], C1[2])), \
+      mpc.key_combine((A1[3], B1[3], C1[3]))
+
+    M = b'MPC on a Friday night'
+
+    A3, B3 = mpc.sign_share(M, (A2[1], A2[2])), mpc.sign_share(M, (B2[1], B2[2]))
+
+    A4, B4 = mpc.sign(M, (A3[1], B3[1])), mpc.sign(M, (A3[2], B3[2]))
+
+    sig = mpc.sign_combine((A4, B4))
+    assert mpc.verify(M, sig)
+
+    pub = A2[1]['y']
+    u = mpc.curve.scalar_random()
+    y = mpc.curve.point_add(A1[1]['y'], mpc.curve.point_mul_base(u))
+    A1[1]['y'], A1[2]['y'], A1[3]['y'] = y, y, y
+    A1[1]['u'], A1[2]['u'], A1[3]['u'] = ggmpc.shamir.split(mpc.curve, mpc.curve.scalar_add(sk['u'], u), 2, 3).values()
+
+    A2, B2, C2 = \
+      mpc.key_combine((A1[1], B1[1], C1[1])), \
+      mpc.key_combine((A1[2], B1[2], C1[2])), \
+      mpc.key_combine((A1[3], B1[3], C1[3]))
+
+    assert(A2[1]['y'] == mpc.curve.point_add(pub, mpc.curve.point_mul_base(u)))
+
+    A3, B3 = mpc.sign_share(M, (A2[1], A2[2])), mpc.sign_share(M, (B2[1], B2[2]))
+
+    A4, B4 = mpc.sign(M, (A3[1], B3[1])), mpc.sign(M, (A3[2], B3[2]))
+
+    sig = mpc.sign_combine((A4, B4))
+    assert mpc.verify(M, sig)

@@ -216,6 +216,19 @@ def main():
     required=True,
   )
 
+  secretgen_parser = eddsa_subparsers.add_parser(
+    'secretgen',
+    help='generate secret',
+  )
+  secretgen_parser.add_argument(
+    '-nz',
+    help='disable compression',
+    dest='compress',
+    action='store_false',
+    default=True,
+  )
+  secretgen_parser.set_defaults(func=eddsa_secret_generate)
+
   keyshare_parser = eddsa_subparsers.add_parser(
     'keyshare',
     help='create key shares',
@@ -238,6 +251,11 @@ def main():
     type=int,
     help='number of players',
     required=True,
+  )
+  keyshare_parser.add_argument(
+    '-sk',
+    type=str,
+    help='optional secret returned from the secretgen command',
   )
   keyshare_parser.add_argument(
     '-nz',
@@ -465,6 +483,11 @@ def ecdsa_verify(mpc, args):
   assert mpc.verify(M, deserialize(args.SIGNATURE[0]))
   print('\nVerification succeeded')
 
+def eddsa_secret_generate(mpc, args):
+  ser = partial(serialize, compress=args.compress)
+  sk = mpc.secret_generate()
+  print('\nSave for yourself: %s' % ser(DataType.EDDSA_SECRET, sk))
+
 def eddsa_key_share(mpc, args):
   ser = partial(serialize, compress=args.compress)
   shares = mpc.key_share(args.i, args.t, args.n)
@@ -591,6 +614,7 @@ class DataType(enum.Enum):
   ECDSA_D_SHARE = 'dshc', '_i0j1_'
   ECDSA_S_SHARE = 'sshc', '_i0_'
   ECDSA_SIGNATURE = 'sigc_',
+  EDDSA_SECRET = 'sk_',
   EDDSA_U_SHARE = 'ushd', '_i0_'
   EDDSA_Y_SHARE = 'yshd', '_i0j1_'
   EDDSA_P_SHARE = 'pshd', '_i0_'
@@ -619,6 +643,7 @@ def serialize(data_type, data, compress=True):
       DataType.ECDSA_D_SHARE: serialization.ecdsa.serialize_d_share,
       DataType.ECDSA_S_SHARE: serialization.ecdsa.serialize_s_share,
       DataType.ECDSA_SIGNATURE: serialization.ecdsa.serialize_signature,
+      DataType.EDDSA_SECRET: serialization.eddsa.serialize_secret,
       DataType.EDDSA_U_SHARE: serialization.eddsa.serialize_u_share,
       DataType.EDDSA_Y_SHARE: serialization.eddsa.serialize_y_share,
       DataType.EDDSA_P_SHARE: serialization.eddsa.serialize_p_share,
@@ -669,6 +694,7 @@ def deserialize(data):
     DataType.ECDSA_D_SHARE: serialization.ecdsa.deserialize_d_share,
     DataType.ECDSA_S_SHARE: serialization.ecdsa.deserialize_s_share,
     DataType.ECDSA_SIGNATURE: serialization.ecdsa.deserialize_signature,
+    DataType.EDDSA_SECRET: serialization.eddsa.deserialize_secret,
     DataType.EDDSA_U_SHARE: serialization.eddsa.deserialize_u_share,
     DataType.EDDSA_Y_SHARE: serialization.eddsa.deserialize_y_share,
     DataType.EDDSA_P_SHARE: serialization.eddsa.deserialize_p_share,
@@ -693,6 +719,7 @@ def deserialize(data):
     DataType.ECDSA_D_SHARE: 67,
     DataType.ECDSA_S_SHARE: 98,
     DataType.ECDSA_SIGNATURE: 97,
+    DataType.EDDSA_SECRET: 64,
     DataType.EDDSA_U_SHARE: 97,
     DataType.EDDSA_Y_SHARE: 66,
     DataType.EDDSA_P_SHARE: 97,
