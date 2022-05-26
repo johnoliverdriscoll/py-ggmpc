@@ -178,6 +178,9 @@ class Ecdsa:
         and the k-share received from the other signer. Use only in a 2-of-\*
         threshold setup.
 
+      * The signer's private w-share and the alpha-share received from the other
+        signer.
+
       * The signer's private beta-share and the alpha-share received from the
         other signer.
 

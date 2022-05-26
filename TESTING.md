@@ -664,7 +664,7 @@ oshc_i1_FkMRpWznmYyeRedwXSRCrmMUCghZwc7EkCj5ao4VvBN2pQD86KjxM6dBtdY5cMhwwrxaiBLg
 dshc_i1j2_2p3vRWHWsouJP5hJHByi7PEBSaFFtANJQzJPwj9Me4GYgiswGmZLh32pX4wUP8SrszaZzZ5SbCaTPPkJHpJ2JnzoMma1B2
 
 Send to all players: sshc_i1_es2rbjVNjxPsbzUT1qRACMmaZXwjLkZ3ZdM5vYKwsBJVPewD25SYng9U5B1HZPnbbpK1VQmrRHm6oaBdk5pUufnrv31BvYxLPWnAhYWrtc6e3kP5UCBvJgW9YxPsHNuULLa7xdTQ5
-``
+```
 
 Bob signs the message using his private omicron-share and the delta-share he
 received from Alice.
