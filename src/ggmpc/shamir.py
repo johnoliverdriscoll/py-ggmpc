@@ -32,6 +32,7 @@ def split(curve, s, t, n=None, I=None):
       curve.scalar_add(coef, curve.scalar_mul(partial, x)),
       coefs,
     )
+  shares['v'] = list(map(lambda e: curve.scalar_mul_base(e), reversed(coefs)))
   return shares
 
 def combine(curve, shares):

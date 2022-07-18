@@ -108,15 +108,34 @@ def main():
     default=True,
   )
 
+  signchallenge_parser = ecdsa_subparsers.add_parser(
+    'signchallenge',
+    help='create signing challenge',
+  )
+  signchallenge_parser.set_defaults(func=ecdsa_sign_challenge)
+  signchallenge_parser.add_argument(
+    'KEYSHARE',
+    type=str,
+    help='combined key shares for all signers',
+    nargs='+',
+  )
+  signchallenge_parser.add_argument(
+    '-nz',
+    help='disable compression',
+    dest='compress',
+    action='store_false',
+    default=True,
+  )
+
   signshare_parser = ecdsa_subparsers.add_parser(
     'signshare',
     help='create signing shares',
   )
   signshare_parser.set_defaults(func=ecdsa_sign_share)
   signshare_parser.add_argument(
-    'KEYSHARE',
+    'CHALLENGE',
     type=str,
-    help='combined key shares for all signers',
+    help='signing challenges for all signers',
     nargs='+',
   )
   signshare_parser.add_argument(
@@ -417,13 +436,25 @@ def ecdsa_key_combine(mpc, args):
         % (i, ser(DataType.ECDSA_Y_SHARE, shares[i]))
       )
 
+def ecdsa_sign_challenge(mpc, args):
+  ser = partial(serialize, compress=args.compress)
+  shares = mpc.sign_challenge(list(map(deserialize, args.KEYSHARE)))
+  S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
+  print('\nSave for yourself: %s' % ser(DataType.ECDSA_H_SHARE, S_i))
+  for i in shares:
+    if i != S_i['i']:
+      print(
+        '\nSend to player %d: %s' \
+        % (i, ser(DataType.ECDSA_J_SHARE, shares[i]))
+      )
+
 def ecdsa_sign_share(mpc, args):
   ser = partial(serialize, compress=args.compress)
-  shares = mpc.sign_share(list(map(deserialize, args.KEYSHARE)))
-  P_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
-  print('\nSave for yourself: %s' % ser(DataType.ECDSA_W_SHARE, P_i))
+  shares = mpc.sign_share(list(map(deserialize, args.CHALLENGE)))
+  S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
+  print('\nSave for yourself: %s' % ser(DataType.ECDSA_W_SHARE, S_i))
   for i in shares:
-    if i != P_i['i']:
+    if i != S_i['i']:
       print(
         '\nSend to player %d: %s' \
         % (i, ser(DataType.ECDSA_K_SHARE, shares[i]))
@@ -431,27 +462,29 @@ def ecdsa_sign_share(mpc, args):
 
 def ecdsa_sign_convert(mpc, args):
   ser = partial(serialize, compress=args.compress)
-  shares = list(map(deserialize, args.SIGNSHARE))
-  for i in range(0, len(shares)):
-    share = shares[i]
-    if type(list(share.keys())[0]) == int:
-      shares[i] = shares[i][next(filter(lambda i: not 'j' in share[i], share))]
-  shares = mpc.sign_convert(shares)
-  P_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
-  P_j = shares[next(filter(lambda i: 'j' in shares[i], shares))]
+  shares = mpc.sign_convert(list(map(deserialize, args.SIGNSHARE)))
+  S_i, S_j = None, None
+  for i in shares:
+    if not 'j' in shares[i]:
+      S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
+      S_j = shares[next(filter(lambda i: 'j' in shares[i], shares))]
+      break
+  if not S_i:
+    S_i = shares[next(filter(lambda i: 'gamma' in shares[i], shares))]
+    S_j = shares[next(filter(lambda i: not 'gamma' in shares[i], shares))]
   data_type = None
-  if 'alpha' in P_i:
+  if 'alpha' in S_i:
     data_type = DataType.ECDSA_G_SHARE
   else:
     data_type = DataType.ECDSA_B_SHARE
-  print('\nSave for yourself:', ser(data_type, shares),)
+  print('\nSave for yourself:', ser(data_type, S_i))
   data_type = None
-  if 'k' in P_j or 'alpha' in P_j:
-    if 'k' in P_j:
+  if 'k' in S_j or 'alpha' in S_j:
+    if 'k' in S_j:
       data_type = DataType.ECDSA_A_SHARE
     else:
       data_type = DataType.ECDSA_M_SHARE
-    print('\nSend to player %d: %s' % (P_j['i'], ser(data_type, P_j)))
+    print('\nSend to player %d: %s' % (S_j['i'], ser(data_type, S_j)))
 
 def ecdsa_sign_combine(mpc, args):
   ser = partial(serialize, compress=args.compress)
@@ -460,15 +493,15 @@ def ecdsa_sign_combine(mpc, args):
     print('\n%s' % ser(DataType.ECDSA_SIGNATURE, mpc.sign_combine(shares)))
   else:
     shares = mpc.sign_combine(shares)
-    P_i = shares[next(filter(lambda i: 'k' in shares[i], shares))]
-    print('\nSave for yourself: %s' % ser(DataType.ECDSA_O_SHARE, P_i))
+    S_i = shares[next(filter(lambda i: 'k' in shares[i], shares))]
+    print('\nSave for yourself: %s' % ser(DataType.ECDSA_O_SHARE, S_i))
     for i in shares:
-      if i != P_i['i']:
+      if i != S_i['i']:
         print(
           '\nSend to player %d: %s' \
           % (i, ser(DataType.ECDSA_D_SHARE, shares[i]))
         )
-                                            
+
 def ecdsa_sign(mpc, args):
   ser = partial(serialize, compress=args.compress)
   M = args.MESSAGE[0].encode('ascii')
@@ -603,13 +636,15 @@ class DataType(enum.Enum):
   ECDSA_P_SHARE = 'pshc', '_i0_'
   ECDSA_N_SHARE = 'nshc', '_i0j1_'
   ECDSA_X_SHARE = 'xshc', '_i0_'
-  ECDSA_Y_SHARE = 'yshc', '_i0j1_'
+  ECDSA_Y_SHARE = 'yshc', '_i0j1'
+  ECDSA_H_SHARE = 'hshc', '_i0_'
+  ECDSA_J_SHARE = 'jshc', '_i0j1_'
   ECDSA_W_SHARE = 'wshc', '_i0_'
   ECDSA_K_SHARE = 'kshc', '_i0j1_'
-  ECDSA_B_SHARE = 'bshc', '_i0j1_'
+  ECDSA_B_SHARE = 'bshc', '_i0_'
   ECDSA_A_SHARE = 'ashc', '_i0j1_'
-  ECDSA_M_SHARE = 'mshc', '_i0j1_'
   ECDSA_G_SHARE = 'gshc', '_i0j1_'
+  ECDSA_M_SHARE = 'mshc', '_i0j1_'
   ECDSA_O_SHARE = 'oshc', '_i0_'
   ECDSA_D_SHARE = 'dshc', '_i0j1_'
   ECDSA_S_SHARE = 'sshc', '_i0_'
@@ -633,6 +668,8 @@ def serialize(data_type, data, compress=True):
       DataType.ECDSA_N_SHARE: serialization.ecdsa.serialize_n_share,
       DataType.ECDSA_X_SHARE: serialization.ecdsa.serialize_x_share,
       DataType.ECDSA_Y_SHARE: serialization.ecdsa.serialize_y_share,
+      DataType.ECDSA_H_SHARE: serialization.ecdsa.serialize_h_share,
+      DataType.ECDSA_J_SHARE: serialization.ecdsa.serialize_j_share,
       DataType.ECDSA_W_SHARE: serialization.ecdsa.serialize_w_share,
       DataType.ECDSA_K_SHARE: serialization.ecdsa.serialize_k_share,
       DataType.ECDSA_B_SHARE: serialization.ecdsa.serialize_b_share,
@@ -684,6 +721,8 @@ def deserialize(data):
     DataType.ECDSA_N_SHARE: serialization.ecdsa.deserialize_n_share,
     DataType.ECDSA_X_SHARE: serialization.ecdsa.deserialize_x_share,
     DataType.ECDSA_Y_SHARE: serialization.ecdsa.deserialize_y_share,
+    DataType.ECDSA_H_SHARE: serialization.ecdsa.deserialize_h_share,
+    DataType.ECDSA_J_SHARE: serialization.ecdsa.deserialize_j_share,
     DataType.ECDSA_W_SHARE: serialization.ecdsa.deserialize_w_share,
     DataType.ECDSA_K_SHARE: serialization.ecdsa.deserialize_k_share,
     DataType.ECDSA_B_SHARE: serialization.ecdsa.deserialize_b_share,
@@ -704,31 +743,6 @@ def deserialize(data):
     DataType.EDDSA_G_SHARE: serialization.eddsa.deserialize_g_share,
     DataType.EDDSA_SIGNATURE: serialization.eddsa.deserialize_signature,
   }
-  data_size = {
-    DataType.ECDSA_P_SHARE: 450,
-    DataType.ECDSA_N_SHARE: 451,
-    DataType.ECDSA_X_SHARE: 450,
-    DataType.ECDSA_Y_SHARE: 386,
-    DataType.ECDSA_W_SHARE: 514,
-    DataType.ECDSA_K_SHARE: 1154,
-    DataType.ECDSA_B_SHARE: 3267,
-    DataType.ECDSA_A_SHARE: 2690,
-    DataType.ECDSA_M_SHARE: 1538,
-    DataType.ECDSA_G_SHARE: 259,
-    DataType.ECDSA_O_SHARE: 163,
-    DataType.ECDSA_D_SHARE: 67,
-    DataType.ECDSA_S_SHARE: 98,
-    DataType.ECDSA_SIGNATURE: 97,
-    DataType.EDDSA_SECRET: 64,
-    DataType.EDDSA_U_SHARE: 97,
-    DataType.EDDSA_Y_SHARE: 66,
-    DataType.EDDSA_P_SHARE: 97,
-    DataType.EDDSA_J_SHARE: 2,
-    DataType.EDDSA_X_SHARE: 129,
-    DataType.EDDSA_R_SHARE: 66,
-    DataType.EDDSA_G_SHARE: 97,
-    DataType.EDDSA_SIGNATURE: 96,
-  }
   for data_type in DataType:
     if data[:len(data_type.value[0])] == data_type.value[0]:
       prefix_len = len(data_type.value[0])
@@ -739,10 +753,12 @@ def deserialize(data):
         prefix += data[prefix_len:prefix_len + len(data_type.value[1])]
         prefix_len += len(data_type.value[1])
         index = prefix[len(data_type.value[0]):]
-        if data_type.value[1].find('0') >= 0:
-          i = alphabet.index(index[data_type.value[1].find('0')]) + 1
-        if data_type.value[1].find('1') >= 0:
-          j = alphabet.index(index[data_type.value[1].find('1')]) + 1
+        pos0 = data_type.value[1].find('0')
+        pos1 = data_type.value[1].find('1')
+        if pos0 >= 0:
+          i = alphabet.index(index[pos0]) + 1
+        if pos1 >= 0:
+          j = alphabet.index(index[pos1]) + 1
       if len(data) > prefix_len:
         data = base58.b58decode_check(data[prefix_len:])
       else:

@@ -89,7 +89,10 @@ def serialize_y_share(share):
   ser = b''
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['j'], 1)
+  ser += serialization.serialize_int(share['t'], 1)
   ser += serialization.serialize_int(share['y'], 32)
+  for v in share['v']:
+    ser += serialization.serialize_int(v, 32)
   ser += serialization.serialize_int(share['u'], 32)
   return ser
 
@@ -108,7 +111,12 @@ def deserialize_y_share(ser):
   P_j = {}
   ser, P_j['i'] = serialization.deserialize_int(ser, 1)
   ser, P_j['j'] = serialization.deserialize_int(ser, 1)
+  ser, P_j['t'] = serialization.deserialize_int(ser, 1)
   ser, P_j['y'] = serialization.deserialize_int(ser, 32)
+  P_j['v'] = []
+  for _ in range(0, P_j['t'] - 1):
+    ser, v = serialization.deserialize_int(ser, 32)
+    P_j['v'].append(v)
   ser, P_j['u'] = serialization.deserialize_int(ser, 32)
   return ser, P_j
 

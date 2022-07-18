@@ -41,6 +41,11 @@ class Curve:
 
   :type scalar_negate: function
 
+  :param scalar_mul_base: Function that multiplies the curve generator by a field
+    element.
+
+  :type scalar_mul_base: function
+
   :param point_add: Function that adds two group elements.
 
   :type point_add: function
@@ -48,11 +53,6 @@ class Curve:
   :param point_mul: Function that multiplies a group element by a field element.
 
   :type point_mul: function
-
-  :param point_mul_base: Function that multiplies the curve generator by a field
-    element.
-
-  :type point_mul_base: function
 
   :param order: Function that returns the order of the curve.
 
@@ -76,9 +76,9 @@ class Curve:
       scalar_reduce,
       scalar_negate,
       scalar_invert,
+      scalar_mul_base,
       point_add,
       point_mul,
-      point_mul_base,
       order,
       hash,
       verify,
@@ -90,9 +90,9 @@ class Curve:
     self.scalar_reduce = scalar_reduce
     self.scalar_negate = scalar_negate
     self.scalar_invert = scalar_invert
+    self.scalar_mul_base = scalar_mul_base
     self.point_add = point_add
     self.point_mul = point_mul
-    self.point_mul_base = point_mul_base
     self.order = order
     self.hash = hash
     self.verify = verify
@@ -114,9 +114,9 @@ secp256k1 = Curve(
   lambda x: x % _secp256k1_order,
   lambda x: -x % _secp256k1_order,
   lambda x: pow(x, -1, _secp256k1_order),
-  lambda p, q: p + q,
-  lambda p, q: p * q,
   lambda n: ecdsa.ecdsa.generator_secp256k1 * n,
+  lambda p, q: p + q,
+  lambda p, n: p * n,
   lambda: _secp256k1_order,
   hashlib.sha256,
   _ecdsa_verify(ecdsa.curves.SECP256k1, hashlib.sha256),
@@ -148,16 +148,16 @@ ed25519 = Curve(
   lambda x: int.from_bytes(bindings.crypto_core_ed25519_scalar_invert(
     x.to_bytes(32, 'little'),
   ), 'little'),
+  lambda n: int.from_bytes(bindings.crypto_scalarmult_ed25519_base_noclamp(
+    n.to_bytes(32, 'little'),
+  ), 'little'),
   lambda p, q: int.from_bytes(bindings.crypto_core_ed25519_add(
     p.to_bytes(32, 'little'),
     q.to_bytes(32, 'little'),
   ), 'little'),
   lambda p, n: int.from_bytes(bindings.crypto_scalarmult_ed25519_noclamp(
+    n.to_bytes(32, 'little'),
     p.to_bytes(32, 'little'),
-    n.to_bytes(32, 'little'),
-  ), 'little'),
-  lambda n: int.from_bytes(bindings.crypto_scalarmult_ed25519_base_noclamp(
-    n.to_bytes(32, 'little'),
   ), 'little'),
   None,
   hashlib.sha512,

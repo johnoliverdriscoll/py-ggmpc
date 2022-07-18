@@ -5,7 +5,7 @@
 
 This is an implementation of MPC threshold signatures for both ECDSA and EdDSA.
 The ECDSA implementation is based on [Fast Multiparty Threshold ECDSA with Fast
-Trustless Setup](https://eprint.iacr.org/2020/540.pdf). The EdDSA implementation is based on [Provably Secure Distributed Schnorr Signatures and a (*t*, *n*)
+Trustless Setup](https://eprint.iacr.org/2019/114.pdf). The EdDSA implementation is based on [Provably Secure Distributed Schnorr Signatures and a (*t*, *n*)
 Threshold Scheme for Implicit Certificates](https://github.com/ZenGo-X/multi-party-schnorr/blob/master/papers/provably_secure_distributed_schnorr_signatures_and_a_threshold_scheme.pdf).
 
 # Installation

@@ -16,16 +16,22 @@ class Ecdsa(unittest.TestCase):
       mpc.key_combine((A[2], B[2], C[2])), \
       mpc.key_combine((A[3], B[3], C[3])),
 
-    AB = mpc.sign_share((A[1], A[2]))
-    BA = mpc.sign_convert((B[1], B[2], AB[2]))
-    AB = mpc.sign_convert((AB[1], BA[1]))
-    BA = mpc.sign_convert((BA[2], AB[2]))
+    A = mpc.sign_challenge((A[1], A[2]))
 
-    AB, BA = mpc.sign_combine((AB,)), mpc.sign_combine((BA,))
+    BA = mpc.sign_share((A[2], B[2]))
+    AB = mpc.sign_convert((A[1], BA[1]))
+    BA = mpc.sign_convert((BA[2], AB[2]))
+    AB = mpc.sign_convert((AB[1], BA[1]))
+
+    AB, BA = \
+      mpc.sign_combine((AB,)), \
+      mpc.sign_combine((BA,)),
 
     M = b'MPC on a Friday night'
 
-    A, B = mpc.sign(M, (AB[1], BA[1])), mpc.sign(M, (AB[2], BA[2])),
+    A, B = \
+      mpc.sign(M, (AB[1], BA[1])), \
+      mpc.sign(M, (AB[2], BA[2])),
 
     sig = mpc.sign_combine((A, B))
 
@@ -47,16 +53,24 @@ class Ecdsa(unittest.TestCase):
       mpc.key_combine((A[4], B[4], C[4], D[4], E[4])), \
       mpc.key_combine((A[5], B[5], C[4], D[4], E[4])),
 
-    AC = mpc.sign_share((A[1], A[2], A[3]))
-    CA = mpc.sign_convert((C[1], C[2], C[3], AC[3]))
+    A, C = \
+      mpc.sign_challenge((A[1], A[3])), \
+      mpc.sign_challenge((C[1], C[3])),
+
+    AC = mpc.sign_share((A[1], C[1]))
+    CA = mpc.sign_convert((C[3], AC[3]))
     AC = mpc.sign_convert((AC[1], CA[1]))
     CA = mpc.sign_convert((CA[3], AC[3]))
 
-    AC, CA = mpc.sign_combine((AC,)), mpc.sign_combine((CA,))
+    AC, CA = \
+      mpc.sign_combine((AC,)), \
+      mpc.sign_combine((CA,)),
 
     M = b'MPC on a Friday night'
 
-    A, C = mpc.sign(M, (AC[1], CA[1])), mpc.sign(M, (AC[3], CA[3]))
+    A, C = \
+      mpc.sign(M, (AC[1], CA[1])), \
+      mpc.sign(M, (AC[3], CA[3])),
 
     sig = mpc.sign_combine((A, C))
 
@@ -81,9 +95,15 @@ class Ecdsa(unittest.TestCase):
       mpc.key_combine((A[4], B[4], C[4], D[4], E[4])), \
       mpc.key_combine((A[5], B[5], C[4], D[4], E[4])),
 
-    A = mpc.sign_share((A[1], A[2], A[3]))
-    B = mpc.sign_share((B[1], B[2], B[3]))
-    C = mpc.sign_share((C[1], C[2], C[3]))
+    A, B, C = \
+      mpc.sign_challenge((A[1], A[2], A[3])), \
+      mpc.sign_challenge((B[1], B[2], B[3])), \
+      mpc.sign_challenge((C[1], C[2], C[3])),
+
+    A, B, C = \
+      mpc.sign_share((A[1], B[1], C[1])), \
+      mpc.sign_share((A[2], B[2], C[2])), \
+      mpc.sign_share((A[3], B[3], C[3])),
 
     AB = mpc.sign_convert((A[1], B[1]))
     BA = mpc.sign_convert((B[2], AB[2]))

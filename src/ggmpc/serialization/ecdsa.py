@@ -97,8 +97,10 @@ def serialize_n_share(share):
   ser = b''
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['j'], 1)
-  ser += serialization.serialize_int(share['n'], 384)
+  ser += serialization.serialize_int(share['t'], 1)
   ser += serialize_point(share['y'])
+  for v in share['v']:
+    ser += serialize_point(v)
   ser += serialization.serialize_int(share['u'], 32)
   return ser
 
@@ -117,8 +119,12 @@ def deserialize_n_share(ser):
   P_j = {}
   ser, P_j['i'] = serialization.deserialize_int(ser, 1)
   ser, P_j['j'] = serialization.deserialize_int(ser, 1)
-  ser, P_j['n'] = serialization.deserialize_int(ser, 384)
+  ser, P_j['t'] = serialization.deserialize_int(ser, 1)
   ser, P_j['y'] = deserialize_point(ser)
+  P_j['v'] = []
+  for _ in range(0, P_j['t'] - 1):
+    ser, v = deserialize_point(ser)
+    P_j['v'].append(v)
   ser, P_j['u'] = serialization.deserialize_int(ser, 32)
   return ser, P_j
 
@@ -177,7 +183,6 @@ def serialize_y_share(share):
   ser = b''
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['j'], 1)
-  ser += serialization.serialize_int(share['n'], 384)
   return ser
 
 def deserialize_y_share(ser):
@@ -195,8 +200,95 @@ def deserialize_y_share(ser):
   P_j = {}
   ser, P_j['i'] = serialization.deserialize_int(ser, 1)
   ser, P_j['j'] = serialization.deserialize_int(ser, 1)
-  ser, P_j['n'] = serialization.deserialize_int(ser, 384)
   return ser, P_j
+
+def serialize_h_share(share):
+  """
+  Serialize an h-share.
+
+  :param share: H-share to serialize.
+
+  :type share: dict
+
+  :return: Serialization of `share`.
+
+  :rtype: bytes
+  """
+  ser = b''
+  ser += serialization.serialize_int(share['i'], 1)
+  ser += serialization.serialize_int(share['p'], 192)
+  ser += serialization.serialize_int(share['q'], 192)
+  ser += serialization.serialize_int(share['ntilde'], 384)
+  ser += serialization.serialize_int(share['h1'], 384)
+  ser += serialization.serialize_int(share['h2'], 384)
+  ser += serialize_point(share['y'])
+  ser += serialization.serialize_int(share['x'], 32)
+  return ser
+
+def deserialize_h_share(ser):
+  """
+  Deserialize an x-share.
+
+  :param ser: Serialized data.
+
+  :type ser: bytes
+
+  :return: The remainder of the serialized data and the deserialized x-share.
+
+  :rtype: tuple
+  """
+  P_i = {}
+  ser, P_i['i'] = serialization.deserialize_int(ser, 1)
+  ser, P_i['p'] = serialization.deserialize_int(ser, 192)
+  ser, P_i['q'] = serialization.deserialize_int(ser, 192)
+  ser, P_i['ntilde'] = serialization.deserialize_int(ser, 384)
+  ser, P_i['h1'] = serialization.deserialize_int(ser, 384)
+  ser, P_i['h2'] = serialization.deserialize_int(ser, 384)
+  ser, P_i['y'] = deserialize_point(ser)
+  ser, P_i['x'] = serialization.deserialize_int(ser, 32)
+  return ser, P_i
+
+def serialize_j_share(share):
+  """
+  Serialize a y-share.
+
+  :param share: Y-share to serialize.
+
+  :type share: dict
+
+  :return: Serialization of `share`.
+
+  :rtype: bytes
+  """
+  ser = b''
+  ser += serialization.serialize_int(share['i'], 1)
+  ser += serialization.serialize_int(share['j'], 1)
+  ser += serialization.serialize_int(share['n'], 384)
+  ser += serialization.serialize_int(share['ntilde'], 384)
+  ser += serialization.serialize_int(share['h1'], 384)
+  ser += serialization.serialize_int(share['h2'], 384)
+  return ser
+
+def deserialize_j_share(ser):
+  """
+  Deserialize a y-share.
+
+  :param ser: Serialized data.
+
+  :type ser: bytes
+
+  :return: The remainder of the serialized data and the deserialized y-share.
+
+  :rtype: tuple
+  """
+  S_j = {}
+  ser, S_j['i'] = serialization.deserialize_int(ser, 1)
+  ser, S_j['j'] = serialization.deserialize_int(ser, 1)
+  ser, S_j['n'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ntilde'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['h1'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['h2'] = serialization.deserialize_int(ser, 384)
+  return ser, S_j
 
 def serialize_w_share(share):
   """
@@ -214,8 +306,12 @@ def serialize_w_share(share):
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['p'], 192)
   ser += serialization.serialize_int(share['q'], 192)
+  ser += serialization.serialize_int(share['ntilde'], 384)
+  ser += serialization.serialize_int(share['h1'], 384)
+  ser += serialization.serialize_int(share['h2'], 384)
   ser += serialize_point(share['y'])
   ser += serialization.serialize_int(share['k'], 32)
+  ser += serialization.serialize_int(share['ck'], 768)
   ser += serialization.serialize_int(share['w'], 32)
   ser += serialization.serialize_int(share['gamma'], 32)
   return ser
@@ -236,8 +332,12 @@ def deserialize_w_share(ser):
   ser, S_i['i'] = serialization.deserialize_int(ser, 1)
   ser, S_i['p'] = serialization.deserialize_int(ser, 192)
   ser, S_i['q'] = serialization.deserialize_int(ser, 192)
+  ser, S_i['ntilde'] = serialization.deserialize_int(ser, 384)
+  ser, S_i['h1'] = serialization.deserialize_int(ser, 384)
+  ser, S_i['h2'] = serialization.deserialize_int(ser, 384)
   ser, S_i['y'] = deserialize_point(ser)
   ser, S_i['k'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['ck'] = serialization.deserialize_int(ser, 768)
   ser, S_i['w'] = serialization.deserialize_int(ser, 32)
   ser, S_i['gamma'] = serialization.deserialize_int(ser, 32)
   return ser, S_i
@@ -258,7 +358,16 @@ def serialize_k_share(share):
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['j'], 1)
   ser += serialization.serialize_int(share['n'], 384)
+  ser += serialization.serialize_int(share['ntilde'], 384)
+  ser += serialization.serialize_int(share['h1'], 384)
+  ser += serialization.serialize_int(share['h2'], 384)
   ser += serialization.serialize_int(share['k'], 768)
+  ser += serialization.serialize_int(share['z'], 384)
+  ser += serialization.serialize_int(share['u'], 768)
+  ser += serialization.serialize_int(share['w'], 384)
+  ser += serialization.serialize_int(share['s'], 384)
+  ser += serialization.serialize_int(share['s1'], 96)
+  ser += serialization.serialize_int(share['s2'], 480)
   return ser
 
 def deserialize_k_share(ser):
@@ -277,10 +386,19 @@ def deserialize_k_share(ser):
   ser, S_j['i'] = serialization.deserialize_int(ser, 1)
   ser, S_j['j'] = serialization.deserialize_int(ser, 1)
   ser, S_j['n'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ntilde'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['h1'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['h2'] = serialization.deserialize_int(ser, 384)
   ser, S_j['k'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['z'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['u'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['w'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['s'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['s1'] = serialization.deserialize_int(ser, 96)
+  ser, S_j['s2'] = serialization.deserialize_int(ser, 480)
   return ser, S_j
 
-def serialize_b_share(shares):
+def serialize_b_share(share):
   """
   Serialize a beta-share.
 
@@ -292,23 +410,20 @@ def serialize_b_share(shares):
 
   :rtype: bytes
   """
-  S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
-  S_j = shares[next(filter(lambda j: 'j' in shares[j], shares))]
   ser = b''
-  ser += serialization.serialize_int(S_i['i'], 1)
-  ser += serialization.serialize_int(S_j['i'], 1)
-  ser += serialization.serialize_int(S_i['p'], 192)
-  ser += serialization.serialize_int(S_i['q'], 192)
-  ser += serialize_point(S_i['y'])
-  ser += serialization.serialize_int(S_i['k'], 32)
-  ser += serialization.serialize_int(S_i['w'], 32)
-  ser += serialization.serialize_int(S_i['gamma'], 32)
-  ser += serialization.serialize_int(S_i['beta'], 32)
-  ser += serialization.serialize_int(S_i['nu'], 32)
-  ser += serialization.serialize_int(S_j['n'], 384)
-  ser += serialization.serialize_int(S_j['k'], 768)
-  ser += serialization.serialize_int(S_j['alpha'], 768)
-  ser += serialization.serialize_int(S_j['mu'], 768)
+  ser += serialization.serialize_int(share['i'], 1)
+  ser += serialization.serialize_int(share['p'], 192)
+  ser += serialization.serialize_int(share['q'], 192)
+  ser += serialization.serialize_int(share['ntilde'], 384)
+  ser += serialization.serialize_int(share['h1'], 384)
+  ser += serialization.serialize_int(share['h2'], 384)
+  ser += serialize_point(share['y'])
+  ser += serialization.serialize_int(share['k'], 32)
+  ser += serialization.serialize_int(share['ck'], 768)
+  ser += serialization.serialize_int(share['w'], 32)
+  ser += serialization.serialize_int(share['gamma'], 32)
+  ser += serialization.serialize_int(share['beta'], 32)
+  ser += serialization.serialize_int(share['nu'], 32)
   return ser
 
 def deserialize_b_share(ser):
@@ -324,26 +439,21 @@ def deserialize_b_share(ser):
 
   :rtype: tuple
   """
-  S_i, S_j = {}, {}
+  S_i = {}
   ser, S_i['i'] = serialization.deserialize_int(ser, 1)
-  ser, S_j['i'] = serialization.deserialize_int(ser, 1)
-  S_j['j'] = S_i['i']
   ser, S_i['p'] = serialization.deserialize_int(ser, 192)
   ser, S_i['q'] = serialization.deserialize_int(ser, 192)
+  ser, S_i['ntilde'] = serialization.deserialize_int(ser, 384)
+  ser, S_i['h1'] = serialization.deserialize_int(ser, 384)
+  ser, S_i['h2'] = serialization.deserialize_int(ser, 384)
   ser, S_i['y'] = deserialize_point(ser)
   ser, S_i['k'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['ck'] = serialization.deserialize_int(ser, 768)
   ser, S_i['w'] = serialization.deserialize_int(ser, 32)
   ser, S_i['gamma'] = serialization.deserialize_int(ser, 32)
   ser, S_i['beta'] = serialization.deserialize_int(ser, 32)
   ser, S_i['nu'] = serialization.deserialize_int(ser, 32)
-  ser, S_j['n'] = serialization.deserialize_int(ser, 384)
-  ser, S_j['k'] = serialization.deserialize_int(ser, 768)
-  ser, S_j['alpha'] = serialization.deserialize_int(ser, 768)
-  ser, S_j['mu'] = serialization.deserialize_int(ser, 768)
-  return ser, {
-    S_i['i']: S_i,
-    S_j['i']: S_j,
-  }
+  return ser, S_i
 
 def serialize_a_share(share):
   """
@@ -361,9 +471,42 @@ def serialize_a_share(share):
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['j'], 1)
   ser += serialization.serialize_int(share['n'], 384)
+  ser += serialization.serialize_int(share['ntilde'], 384)
+  ser += serialization.serialize_int(share['h1'], 384)
+  ser += serialization.serialize_int(share['h2'], 384)
   ser += serialization.serialize_int(share['k'], 768)
+  ser += serialization.serialize_int(share['z'], 384)
+  ser += serialization.serialize_int(share['u'], 768)
+  ser += serialization.serialize_int(share['w'], 384)
+  ser += serialization.serialize_int(share['s'], 384)
+  ser += serialization.serialize_int(share['s1'], 96)
+  ser += serialization.serialize_int(share['s2'], 480)
   ser += serialization.serialize_int(share['alpha'], 768)
+  ser += serialization.serialize_int(share['gz'], 384)
+  ser += serialization.serialize_int(share['gzprm'], 384)
+  ser += serialization.serialize_int(share['gt'], 384)
+  ser += serialization.serialize_int(share['gv'], 768)
+  ser += serialization.serialize_int(share['gw'], 384)
+  ser += serialization.serialize_int(share['gs'], 384)
+  ser += serialization.serialize_int(share['gs1'], 96)
+  ser += serialization.serialize_int(share['gs2'], 480)
+  ser += serialization.serialize_int(share['gt1'], 480)
+  ser += serialization.serialize_int(share['gt2'], 448)
+  ser += serialize_point(share['gu'])
+  ser += serialize_point(share['gx'])
   ser += serialization.serialize_int(share['mu'], 768)
+  ser += serialization.serialize_int(share['wz'], 384)
+  ser += serialization.serialize_int(share['wzprm'], 384)
+  ser += serialization.serialize_int(share['wt'], 384)
+  ser += serialization.serialize_int(share['wv'], 768)
+  ser += serialization.serialize_int(share['ww'], 384)
+  ser += serialization.serialize_int(share['ws'], 384)
+  ser += serialization.serialize_int(share['ws1'], 96)
+  ser += serialization.serialize_int(share['ws2'], 480)
+  ser += serialization.serialize_int(share['wt1'], 480)
+  ser += serialization.serialize_int(share['wt2'], 448)
+  ser += serialize_point(share['wu'])
+  ser += serialize_point(share['wx'])
   return ser
 
 def deserialize_a_share(ser):
@@ -382,10 +525,94 @@ def deserialize_a_share(ser):
   ser, S_j['i'] = serialization.deserialize_int(ser, 1)
   ser, S_j['j'] = serialization.deserialize_int(ser, 1)
   ser, S_j['n'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ntilde'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['h1'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['h2'] = serialization.deserialize_int(ser, 384)
   ser, S_j['k'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['z'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['u'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['w'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['s'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['s1'] = serialization.deserialize_int(ser, 96)
+  ser, S_j['s2'] = serialization.deserialize_int(ser, 480)
   ser, S_j['alpha'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['gz'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gzprm'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gt'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gv'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['gw'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gs'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gs1'] = serialization.deserialize_int(ser, 96)
+  ser, S_j['gs2'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['gt1'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['gt2'] = serialization.deserialize_int(ser, 448)
+  ser, S_j['gu'] = deserialize_point(ser)
+  ser, S_j['gx'] = deserialize_point(ser)
   ser, S_j['mu'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['wz'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['wzprm'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['wt'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['wv'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['ww'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ws'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ws1'] = serialization.deserialize_int(ser, 96)
+  ser, S_j['ws2'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['wt1'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['wt2'] = serialization.deserialize_int(ser, 448)
+  ser, S_j['wu'] = deserialize_point(ser)
+  ser, S_j['wx'] = deserialize_point(ser)
   return ser, S_j
+
+def serialize_g_share(share):
+  """
+  Serialize a gamma-share.
+
+  :param share: Gamma-share to serialize.
+
+  :type share: dict
+
+  :return: Serialization of `share`.
+
+  :rtype: bytes
+  """
+  ser = b''
+  ser += serialization.serialize_int(share['i'], 1)
+  ser += serialization.serialize_int(share['j'], 1)
+  ser += serialize_point(share['y'])
+  ser += serialization.serialize_int(share['k'], 32)
+  ser += serialization.serialize_int(share['w'], 32)
+  ser += serialization.serialize_int(share['gamma'], 32)
+  ser += serialization.serialize_int(share['alpha'], 32)
+  ser += serialization.serialize_int(share['beta'], 32)
+  ser += serialization.serialize_int(share['mu'], 32)
+  ser += serialization.serialize_int(share['nu'], 32)
+  return ser
+
+def deserialize_g_share(ser):
+  """
+  Deserialize a gamma-share.
+
+  :param ser: Serialized data.
+
+  :type ser: bytes
+
+  :return: The remainder of the serialized data and the deserialized
+    gamma-share.
+
+  :rtype: tuple
+  """
+  S_i = {}
+  ser, S_i['i'] = serialization.deserialize_int(ser, 1)
+  ser, S_i['j'] = serialization.deserialize_int(ser, 1)
+  ser, S_i['y'] = deserialize_point(ser)
+  ser, S_i['k'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['w'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['gamma'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['alpha'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['beta'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['mu'] = serialization.deserialize_int(ser, 32)
+  ser, S_i['nu'] = serialization.deserialize_int(ser, 32)
+  return ser, S_i
 
 def serialize_m_share(share):
   """
@@ -403,7 +630,31 @@ def serialize_m_share(share):
   ser += serialization.serialize_int(share['i'], 1)
   ser += serialization.serialize_int(share['j'], 1)
   ser += serialization.serialize_int(share['alpha'], 768)
+  ser += serialization.serialize_int(share['gz'], 384)
+  ser += serialization.serialize_int(share['gzprm'], 384)
+  ser += serialization.serialize_int(share['gt'], 384)
+  ser += serialization.serialize_int(share['gv'], 768)
+  ser += serialization.serialize_int(share['gw'], 384)
+  ser += serialization.serialize_int(share['gs'], 384)
+  ser += serialization.serialize_int(share['gs1'], 96)
+  ser += serialization.serialize_int(share['gs2'], 480)
+  ser += serialization.serialize_int(share['gt1'], 480)
+  ser += serialization.serialize_int(share['gt2'], 448)
+  ser += serialize_point(share['gu'])
+  ser += serialize_point(share['gx'])
   ser += serialization.serialize_int(share['mu'], 768)
+  ser += serialization.serialize_int(share['wz'], 384)
+  ser += serialization.serialize_int(share['wzprm'], 384)
+  ser += serialization.serialize_int(share['wt'], 384)
+  ser += serialization.serialize_int(share['wv'], 768)
+  ser += serialization.serialize_int(share['ww'], 384)
+  ser += serialization.serialize_int(share['ws'], 384)
+  ser += serialization.serialize_int(share['ws1'], 96)
+  ser += serialization.serialize_int(share['ws2'], 480)
+  ser += serialization.serialize_int(share['wt1'], 480)
+  ser += serialization.serialize_int(share['wt2'], 448)
+  ser += serialize_point(share['wu'])
+  ser += serialize_point(share['wx'])
   return ser
 
 def deserialize_m_share(ser):
@@ -422,65 +673,32 @@ def deserialize_m_share(ser):
   ser, S_j['i'] = serialization.deserialize_int(ser, 1)
   ser, S_j['j'] = serialization.deserialize_int(ser, 1)
   ser, S_j['alpha'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['gz'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gzprm'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gt'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gv'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['gw'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gs'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['gs1'] = serialization.deserialize_int(ser, 96)
+  ser, S_j['gs2'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['gt1'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['gt2'] = serialization.deserialize_int(ser, 448)
+  ser, S_j['gu'] = deserialize_point(ser)
+  ser, S_j['gx'] = deserialize_point(ser)
   ser, S_j['mu'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['wz'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['wzprm'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['wt'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['wv'] = serialization.deserialize_int(ser, 768)
+  ser, S_j['ww'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ws'] = serialization.deserialize_int(ser, 384)
+  ser, S_j['ws1'] = serialization.deserialize_int(ser, 96)
+  ser, S_j['ws2'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['wt1'] = serialization.deserialize_int(ser, 480)
+  ser, S_j['wt2'] = serialization.deserialize_int(ser, 448)
+  ser, S_j['wu'] = deserialize_point(ser)
+  ser, S_j['wx'] = deserialize_point(ser)
   return ser, S_j
-
-def serialize_g_share(shares):
-  """
-  Serialize a gamma-share.
-
-  :param share: Gamma-share to serialize.
-
-  :type share: dict
-
-  :return: Serialization of `share`.
-
-  :rtype: bytes
-  """
-  S_i = shares[next(filter(lambda i: not 'j' in shares[i], shares))]
-  S_j = shares[next(filter(lambda j: 'j' in shares[j], shares))]
-  ser = b''
-  ser += serialization.serialize_int(S_i['i'], 1)
-  ser += serialization.serialize_int(S_j['i'], 1)
-  ser += serialize_point(S_i['y'])
-  ser += serialization.serialize_int(S_i['k'], 32)
-  ser += serialization.serialize_int(S_i['w'], 32)
-  ser += serialization.serialize_int(S_i['gamma'], 32)
-  ser += serialization.serialize_int(S_i['alpha'], 32)
-  ser += serialization.serialize_int(S_i['beta'], 32)
-  ser += serialization.serialize_int(S_i['mu'], 32)
-  ser += serialization.serialize_int(S_i['nu'], 32)
-  return ser
-
-def deserialize_g_share(ser):
-  """
-  Deserialize a gamma-share.
-
-  :param ser: Serialized data.
-
-  :type ser: bytes
-
-  :return: The remainder of the serialized data and the deserialized
-    gamma-share.
-
-  :rtype: tuple
-  """
-  S_i, S_j = {}, {}
-  ser, S_i['i'] = serialization.deserialize_int(ser, 1)
-  ser, S_j['i'] = serialization.deserialize_int(ser, 1)
-  S_j['j'] = S_i['i']
-  ser, S_i['y'] = deserialize_point(ser)
-  ser, S_i['k'] = serialization.deserialize_int(ser, 32)
-  ser, S_i['w'] = serialization.deserialize_int(ser, 32)
-  ser, S_i['gamma'] = serialization.deserialize_int(ser, 32)
-  ser, S_i['alpha'] = serialization.deserialize_int(ser, 32)
-  ser, S_i['beta'] = serialization.deserialize_int(ser, 32)
-  ser, S_i['mu'] = serialization.deserialize_int(ser, 32)
-  ser, S_i['nu'] = serialization.deserialize_int(ser, 32)
-  return ser, {
-    S_i['i']: S_i,
-    S_j['i']: S_j,
-  }
 
 def serialize_o_share(share):
   """

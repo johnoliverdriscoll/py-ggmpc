@@ -112,16 +112,20 @@ class Eddsa(unittest.TestCase):
 
     pub = A2[1]['y']
     u = mpc.curve.scalar_random()
-    y = mpc.curve.point_add(A1[1]['y'], mpc.curve.point_mul_base(u))
+    y = mpc.curve.point_add(A1[1]['y'], mpc.curve.scalar_mul_base(u))
+    shares = ggmpc.shamir.split(mpc.curve, mpc.curve.scalar_add(sk['u'], u), 2, 3)
+    v = shares['v'][1:]
+    del shares['v']
+    A1[1]['v'], A1[2]['v'], A1[3]['v'] = v, v, v
     A1[1]['y'], A1[2]['y'], A1[3]['y'] = y, y, y
-    A1[1]['u'], A1[2]['u'], A1[3]['u'] = ggmpc.shamir.split(mpc.curve, mpc.curve.scalar_add(sk['u'], u), 2, 3).values()
+    A1[1]['u'], A1[2]['u'], A1[3]['u'] = shares.values()
 
     A2, B2, C2 = \
       mpc.key_combine((A1[1], B1[1], C1[1])), \
       mpc.key_combine((A1[2], B1[2], C1[2])), \
       mpc.key_combine((A1[3], B1[3], C1[3]))
 
-    assert(A2[1]['y'] == mpc.curve.point_add(pub, mpc.curve.point_mul_base(u)))
+    assert(A2[1]['y'] == mpc.curve.point_add(pub, mpc.curve.scalar_mul_base(u)))
 
     A3, B3 = mpc.sign_share(M, (A2[1], A2[2])), mpc.sign_share(M, (B2[1], B2[2]))
 

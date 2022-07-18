@@ -39,10 +39,12 @@ class Ecdsa(unittest.TestCase):
       Ecdsa.ggmpc('keycombine', A[1], B[0], C[2]), \
       Ecdsa.ggmpc('keycombine', A[2], B[2], C[0]),
 
-    AB = Ecdsa.ggmpc('signshare', A[0], A[1])
-    BA = Ecdsa.ggmpc('signconvert', B[0], B[1], AB[1])
-    AB = Ecdsa.ggmpc('signconvert', AB[0], BA[1])
+    A = Ecdsa.ggmpc('signchallenge', A[0], A[1])
+
+    BA = Ecdsa.ggmpc('signshare', B[0], A[1])
+    AB = Ecdsa.ggmpc('signconvert', A[0], BA[1])
     BA = Ecdsa.ggmpc('signconvert', BA[0], AB[1])
+    AB = Ecdsa.ggmpc('signconvert', AB[0], BA[1])
 
     AB, BA = \
       Ecdsa.ggmpc('signcombine', AB[0]), \
@@ -73,9 +75,14 @@ class Ecdsa(unittest.TestCase):
       Ecdsa.ggmpc('keycombine', A[4], B[4], C[4], D[4], E[0]),
 
     A, B, C = \
-      Ecdsa.ggmpc('signshare', A[0], A[1], A[2]), \
-      Ecdsa.ggmpc('signshare', B[1], B[0], B[2]), \
-      Ecdsa.ggmpc('signshare', C[1], C[2], C[0]),
+      Ecdsa.ggmpc('signchallenge', A[0], A[1], A[2]), \
+      Ecdsa.ggmpc('signchallenge', B[1], B[0], B[2]), \
+      Ecdsa.ggmpc('signchallenge', C[1], C[2], C[0]),
+
+    A, B, C = \
+      Ecdsa.ggmpc('signshare', A[0], B[1], C[1]), \
+      Ecdsa.ggmpc('signshare', A[1], B[0], C[2]), \
+      Ecdsa.ggmpc('signshare', A[2], B[2], C[0]),
 
     AB = Ecdsa.ggmpc('signconvert', A[0], B[1])
     BA = Ecdsa.ggmpc('signconvert', B[0], AB[1])
