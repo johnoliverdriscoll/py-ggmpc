@@ -395,7 +395,6 @@ class Ecdsa:
       del S_i['q']
       del S_j['alpha']
       del S_j['mu']
-      del S_j['gz']
     if 'k' in S_j:
       pka = phe.PaillierPublicKey(S_j['n'])
       ntildea = S_j['ntilde']
