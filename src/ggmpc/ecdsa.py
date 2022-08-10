@@ -199,8 +199,8 @@ class Ecdsa:
     pka = phe.PaillierPublicKey(S_i['p'] * S_i['q'])
     # Select $k_i, \gamma_i \in_R Z_q$.
     k = self.curve.scalar_random()
-    r = get_random_coprime_to(pka.n)
-    ck = pka.encrypt(k, r_value=r).ciphertext(False)
+    rk = get_random_coprime_to(pka.n)
+    ck = pka.encrypt(k, r_value=rk).ciphertext(False)
     gamma = self.curve.scalar_random()
     # Map $x_i$ in $(n,t)$ to $w_i$ in $(t,t)$.
     d = reduce(
@@ -231,6 +231,7 @@ class Ecdsa:
         'h2': h2a,
         'k': k,
         'ck': ck,
+        'rk': rk,
         'w': w,
         'gamma': gamma,
       },
@@ -239,7 +240,7 @@ class Ecdsa:
       if 'j' in S_j:
         # Prove $k_i \in Z_{N^2}$.
         ntildeb, h1b, h2b = S_j['ntilde'], S_j['h1'], S_j['h2']
-        z, u, w, s, s1, s2 = prove_range(self.curve, pka, ck, ntildeb, h1b, h2b, k, r)
+        z, u, w, s, s1, s2 = prove_range(self.curve, pka, ck, ntildeb, h1b, h2b, k, rk)
         signers[S_j['j']] = {
           'i': S_j['j'],
           'j': S_i['i'],
@@ -488,6 +489,7 @@ class Ecdsa:
         del S_i['h1']
         del S_i['h2']
         del S_i['ck']
+        del S_i['rk']
         del S_j['n']
         del S_j['ntilde']
         del S_j['h1']
@@ -496,10 +498,9 @@ class Ecdsa:
       else:
         pkb = phe.PaillierPublicKey(S_i['p'] * S_i['q'])
         k = S_i['k']
-        r = get_random_coprime_to(pkb.n)
-        ck = pkb.encrypt(k, r_value=r).ciphertext(False)
-        S_i['ck'] = ck
-        z, u, w, s, s1, s2 = prove_range(self.curve, pkb, ck, ntildea, h1a, h2a, k, r)
+        ck = S_i['ck']
+        rk = S_i['rk']
+        z, u, w, s, s1, s2 = prove_range(self.curve, pkb, ck, ntildea, h1a, h2a, k, rk)
         S_j['n'] = pkb.n
         S_j['ntilde'] = ntildeb
         S_j['h1'] = h1b
@@ -511,6 +512,7 @@ class Ecdsa:
         S_j['s'] = s
         S_j['s1'] = s1
         S_j['s2'] = s2
+        del S_i['rk']
     if not 'alpha' in S_j and not 'k' in S_j:
       S_i['j'] = S_j['j']
       del S_i['ntilde']

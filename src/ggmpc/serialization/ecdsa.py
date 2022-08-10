@@ -312,6 +312,7 @@ def serialize_w_share(share):
   ser += serialize_point(share['y'])
   ser += serialization.serialize_int(share['k'], 32)
   ser += serialization.serialize_int(share['ck'], 768)
+  ser += serialization.serialize_int(share['rk'], 384)
   ser += serialization.serialize_int(share['w'], 32)
   ser += serialization.serialize_int(share['gamma'], 32)
   return ser
@@ -338,6 +339,7 @@ def deserialize_w_share(ser):
   ser, S_i['y'] = deserialize_point(ser)
   ser, S_i['k'] = serialization.deserialize_int(ser, 32)
   ser, S_i['ck'] = serialization.deserialize_int(ser, 768)
+  ser, S_i['rk'] = serialization.deserialize_int(ser, 384)
   ser, S_i['w'] = serialization.deserialize_int(ser, 32)
   ser, S_i['gamma'] = serialization.deserialize_int(ser, 32)
   return ser, S_i
