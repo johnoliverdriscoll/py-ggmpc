@@ -161,8 +161,8 @@ protocol.
 #### Signing
 
 Alice, Bob, and Carol decide they want to sign something. They begin the
-signing protocol by generating challenges. This results in each signer having a
-*h-share* this is private. Each signer also produces *j-shares*, one for each
+signing protocol by generating challenges. This results in each signer having
+an *h-share* that is private. Each signer also produces *j-shares*, one for each
 other signer.
 
 Alice uses her x-share and the y-shares she has stored for Bob and Carol to
