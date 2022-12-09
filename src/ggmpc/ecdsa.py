@@ -150,7 +150,7 @@ class Ecdsa:
     :rtype: dict
     """
     S_i = next(filter(lambda S_i: not 'j' in S_i, S))
-    ntilde, h1, h2 = generate_pre_params()
+    ntilde, h1, h2 = generate_ntilde()
     signers = {
       S_i['i']: {
         'i': S_i['i'],
@@ -697,15 +697,13 @@ def to_bytes(x, byteorder):
   byte_length = max(1, (x.bit_length() + 7) // 8)
   return x.to_bytes(byte_length, byteorder)
 
-def generate_pre_params():
+def generate_ntilde():
   pk, _ = phe.generate_paillier_keypair(n_length=MODULUS_BITS)
   ntilde = pk.n
-  pk, _ = phe.generate_paillier_keypair(n_length=MODULUS_BITS)
   f1 = get_random_coprime_to(ntilde)
-  alpha = get_random_coprime_to(ntilde)
-  beta = pow(alpha, -1, pk.n)
+  f2 = get_random_coprime_to(ntilde)
   h1 = pow(f1, 2, ntilde)
-  h2 = pow(h1, alpha, ntilde)
+  h2 = pow(f2, 2, ntilde)
   return (ntilde, h1, h2)
 
 def prove_range(curve, pk, c, ntilde, h1, h2, m, r):
