@@ -218,7 +218,7 @@ class Ecdsa:
         [S_i['i']] + list(filter(lambda S_j: 'j' in S_j, S)),
       ),
     )
-    # Generate pre params.
+    # Get ntilde.
     ntildea, h1a, h2a = S_i['ntilde'], S_i['h1'], S_i['h2']
     signers = {
       S_i['i']: {
