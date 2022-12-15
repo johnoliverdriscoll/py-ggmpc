@@ -231,7 +231,6 @@ class Ecdsa:
         'h2': h2a,
         'k': k,
         'ck': ck,
-        'rk': rk,
         'w': w,
         'gamma': gamma,
       },
@@ -303,11 +302,18 @@ class Ecdsa:
 
     :rtype: dict
     """
-    S_i, S_j = None, None
+    S_i, S_j, k_share = None, None, None
     S_i = next(filter(lambda S_i: not 'j' in S_i, S))
     if 'x' in S_i:
-      S_i = self.sign_share(S)[S_i['i']]
-    S_j = next(filter(lambda S_j: 'j' in S_j, S))
+      shares = self.sign_share(S)
+      S_i = shares[S_i['i']]
+      k_share = shares[next(filter(lambda i: 'j' in shares[i], shares))]
+      S_j = next(filter(lambda S_j: 'j' in S_j, S))
+    else:
+      k_list = list(filter(lambda S_j: 'j' in S_j and S_j['j'] == S_i['i'], S))
+      if len(k_list):
+        k_share = k_list[0]
+      S_j = next(filter(lambda S_j: 'j' in S_j and not S_j['j'] == S_i['i'], S))
     assert S_i['i'] == S_j['i']
     S_i = S_i.copy()
     S_j = S_j.copy()
@@ -489,30 +495,23 @@ class Ecdsa:
         del S_i['h1']
         del S_i['h2']
         del S_i['ck']
-        del S_i['rk']
         del S_j['n']
         del S_j['ntilde']
         del S_j['h1']
         del S_j['h2']
         del S_j['k']
       else:
-        pkb = phe.PaillierPublicKey(S_i['p'] * S_i['q'])
-        k = S_i['k']
-        ck = S_i['ck']
-        rk = S_i['rk']
-        z, u, w, s, s1, s2 = prove_range(self.curve, pkb, ck, ntildea, h1a, h2a, k, rk)
-        S_j['n'] = pkb.n
         S_j['ntilde'] = ntildeb
         S_j['h1'] = h1b
         S_j['h2'] = h2b
-        S_j['k'] = ck
-        S_j['z'] = z
-        S_j['u'] = u
-        S_j['w'] = w
-        S_j['s'] = s
-        S_j['s1'] = s1
-        S_j['s2'] = s2
-        del S_i['rk']
+        S_j['n'] = k_share['n']
+        S_j['k'] = k_share['k']
+        S_j['z'] = k_share['z']
+        S_j['u'] = k_share['u']
+        S_j['w'] = k_share['w']
+        S_j['s'] = k_share['s']
+        S_j['s1'] = k_share['s1']
+        S_j['s2'] = k_share['s2']
     if not 'alpha' in S_j and not 'k' in S_j:
       S_i['j'] = S_j['j']
       del S_i['ntilde']
@@ -697,7 +696,7 @@ def to_bytes(x, byteorder):
   byte_length = max(1, (x.bit_length() + 7) // 8)
   return x.to_bytes(byte_length, byteorder)
 
-def generate_ntilde():
+def generate_ntilde(ntilde=None, f1=None, f2=None):
   pk, _ = phe.generate_paillier_keypair(n_length=MODULUS_BITS)
   ntilde = pk.n
   f1 = get_random_coprime_to(ntilde)
@@ -794,12 +793,10 @@ def prove_range_wc(curve, pk, ntilde, h1, h2, c1, c2, x, y, r, X):
     hash.update(b'\x0d\x00\x00\x00\x00\x00\x00\x00' + b'$'.join([
       to_bytes(pk.n, 'big'),
       to_bytes(pk.g, 'big'),
-      to_bytes(int(X.x()), 'big'),
-      to_bytes(int(X.y()), 'big'),
+      X.to_bytes('compressed'),
       to_bytes(c1, 'big'),
       to_bytes(c2, 'big'),
-      to_bytes(int(u.x()), 'big'),
-      to_bytes(int(u.y()), 'big'),
+      u.to_bytes('compressed'),
       to_bytes(z, 'big'),
       to_bytes(zprm, 'big'),
       to_bytes(t, 'big'),
@@ -838,12 +835,10 @@ def verify_range_proof_wc(curve, pk, ntilde, h1, h2, z, zprm, t, v, w, s, s1, s2
     hash.update(b'\x0d\x00\x00\x00\x00\x00\x00\x00' + b'$'.join([
       to_bytes(pk.n, 'big'),
       to_bytes(pk.g, 'big'),
-      to_bytes(int(X.x()), 'big'),
-      to_bytes(int(X.y()), 'big'),
+      X.to_bytes('compressed'),
       to_bytes(c1, 'big'),
       to_bytes(c2, 'big'),
-      to_bytes(int(u.x()), 'big'),
-      to_bytes(int(u.y()), 'big'),
+      u.to_bytes('compressed'),
       to_bytes(z, 'big'),
       to_bytes(zprm, 'big'),
       to_bytes(t, 'big'),

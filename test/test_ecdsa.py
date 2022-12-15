@@ -16,12 +16,12 @@ class Ecdsa(unittest.TestCase):
       mpc.key_combine((A[2], B[2], C[2])), \
       mpc.key_combine((A[3], B[3], C[3])),
 
-    A = mpc.sign_challenge((A[1], A[2]))
+    B = mpc.sign_challenge((B[1], B[2]))
 
-    BA = mpc.sign_share((A[2], B[2]))
-    AB = mpc.sign_convert((A[1], BA[1]))
-    BA = mpc.sign_convert((BA[2], AB[2]))
+    AB = mpc.sign_share((A[1], B[1]))
+    BA = mpc.sign_convert((B[2], AB[2]))
     AB = mpc.sign_convert((AB[1], BA[1]))
+    BA = mpc.sign_convert((BA[2], AB[2]))
 
     AB, BA = \
       mpc.sign_combine((AB,)), \
@@ -105,15 +105,15 @@ class Ecdsa(unittest.TestCase):
       mpc.sign_share((A[2], B[2], C[2])), \
       mpc.sign_share((A[3], B[3], C[3])),
 
-    AB = mpc.sign_convert((A[1], B[1]))
+    AB = mpc.sign_convert((A[1], A[2], B[1]))
     BA = mpc.sign_convert((B[2], AB[2]))
     AB = mpc.sign_convert((AB[1], BA[1]))
 
-    AC = mpc.sign_convert((A[1], C[1]))
+    AC = mpc.sign_convert((A[1], A[3], C[1]))
     CA = mpc.sign_convert((C[3], AC[3]))
     AC = mpc.sign_convert((AC[1], CA[1]))
 
-    BC = mpc.sign_convert((B[2], C[2]))
+    BC = mpc.sign_convert((B[2], B[3], C[2]))
     CB = mpc.sign_convert((C[3], BC[3]))
     BC = mpc.sign_convert((BC[2], CB[2]))
 
@@ -128,7 +128,6 @@ class Ecdsa(unittest.TestCase):
       mpc.sign(M, (ABC[1], BAC[1], CAB[1])), \
       mpc.sign(M, (ABC[2], BAC[2], CAB[2])), \
       mpc.sign(M, (ABC[3], BAC[3], CAB[3])),
-
 
     sig = mpc.sign_combine((A, B, C))
 
