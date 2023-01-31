@@ -754,7 +754,7 @@ def verify_range_proof(curve, pk, ntilde, h1, h2, z, u, w, s, s1, s2, c):
   products = (pow(pk.g, s1, pk.nsquare) * pow(s, pk.n, pk.nsquare) * pow(c, -e, pk.nsquare)) % pk.nsquare
   if not u == products:
     return False
-  products = (((pow(h1, s1, ntilde) * pow(h2, s2, ntilde)) % ntilde) * pow(z, -e, ntilde)) % ntilde
+  products = (pow(h1, s1, ntilde) * pow(h2, s2, ntilde) * pow(z, -e, ntilde)) % ntilde
   if not w == products:
     return False
   return True
@@ -776,7 +776,7 @@ def prove_range_wc(curve, pk, ntilde, h1, h2, c1, c2, x, y, r, X):
   z = (pow(h1, x, ntilde) * pow(h2, rho, ntilde)) % ntilde
   zprm = (pow(h1, alpha, ntilde) * pow(h2, rhoprm, ntilde)) % ntilde
   t = (pow(h1, y, ntilde) * pow(h2, sigma, ntilde)) % ntilde
-  v = (((pow(c1, alpha, pk.nsquare) * pow(pk.g, gamma, pk.nsquare)) % pk.nsquare) * pow(beta, pk.n, pk.nsquare)) % pk.nsquare
+  v = (pow(c1, alpha, pk.nsquare) * pow(pk.g, gamma, pk.nsquare) * pow(beta, pk.n, pk.nsquare)) % pk.nsquare
   w = (pow(h1, gamma, ntilde) * pow(h2, tau, ntilde)) % ntilde
   if not X:
     hash = hashlib.new('sha512_256')
@@ -872,7 +872,7 @@ def verify_range_proof_wc(curve, pk, ntilde, h1, h2, z, zprm, t, v, w, s, s1, s2
   c1ExpS1 = pow(c1, s1, pk.nsquare)
   sExpN = pow(s, pk.n, pk.nsquare)
   gammaExpT1 = pow(pk.g, t1, pk.nsquare)
-  left = (((c1ExpS1 * sExpN) % pk.nsquare) * gammaExpT1) % pk.nsquare
+  left = (c1ExpS1 * sExpN * gammaExpT1) % pk.nsquare
   c2ExpE = pow(c2, e, pk.nsquare)
   right = (c2ExpE * v) % pk.nsquare
   if not left == right:
