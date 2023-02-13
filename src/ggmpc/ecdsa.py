@@ -425,7 +425,7 @@ class Ecdsa:
         raise RuntimeError('could not verify share')
       k = phe.EncryptedNumber(pka, k)
       # MtA $k_j, \gamma_i$.
-      beta0 = get_random_less_than(pka.max_int)
+      beta0 = get_random_less_than(self.curve.order() ** 5)
       S_i['beta'] = self.curve.scalar_negate(self.curve.scalar_reduce(beta0))
       rb = get_random_coprime_to(pka.n)
       cb = pka.encrypt(beta0, r_value=rb)
@@ -460,7 +460,7 @@ class Ecdsa:
       S_j['gu'] = gu
       S_j['gx'] = gx
       # MtA $k_j, w_i$.
-      nu0 = get_random_less_than(pka.max_int)
+      nu0 = get_random_less_than(self.curve.order() ** 5)
       S_i['nu'] = self.curve.scalar_negate(self.curve.scalar_reduce(nu0))
       rn = get_random_coprime_to(pka.n)
       cn = pka.encrypt(nu0, r_value=rn)
@@ -696,8 +696,9 @@ class Ecdsa:
       sig['r'].to_bytes(32, 'big') + sig['s'].to_bytes(32, 'big'),
     )
 
-def to_bytes(x, byteorder):
-  byte_length = max(1, (x.bit_length() + 7) // 8)
+def to_bytes(x, byteorder, byte_length = None):
+  if not byte_length:
+    byte_length = max(1, (x.bit_length() + 7) // 8)
   return x.to_bytes(byte_length, byteorder)
 
 def generate_ntilde(ntilde=None, f1=None, f2=None):
@@ -762,6 +763,7 @@ def verify_range_proof(curve, pk, ntilde, h1, h2, z, u, w, s, s1, s2, c):
 def prove_range_wc(curve, pk, ntilde, h1, h2, c1, c2, x, y, r, X):
   q = curve.order()
   q3 = q ** 3
+  q7 = q ** 7
   qntilde = q * ntilde
   q3ntilde = q3 * ntilde
   alpha = get_random_less_than(q3)
@@ -770,7 +772,7 @@ def prove_range_wc(curve, pk, ntilde, h1, h2, c1, c2, x, y, r, X):
   tau = get_random_less_than(qntilde)
   rhoprm = get_random_less_than(q3ntilde)
   beta = get_random_coprime_to(pk.n)
-  gamma = get_random_less_than(q3ntilde)
+  gamma = get_random_less_than(q7)
   if X:
     u = curve.scalar_mul_base(alpha)
   z = (pow(h1, x, ntilde) * pow(h2, rho, ntilde)) % ntilde
@@ -818,7 +820,10 @@ def prove_range_wc(curve, pk, ntilde, h1, h2, c1, c2, x, y, r, X):
 def verify_range_proof_wc(curve, pk, ntilde, h1, h2, z, zprm, t, v, w, s, s1, s2, t1, t2, c1, c2, u, X):
   q = curve.order()
   q3 = q ** 3
-  if s1 == q3:
+  q7 = q ** 7
+  if s1 > q3:
+    return False
+  if t1 > q7:
     return False
   if not X:
     hash = hashlib.new('sha512_256')
